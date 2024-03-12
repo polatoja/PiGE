@@ -21,7 +21,7 @@
     <ClCompile Include="app_battleship.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="board_window.cpp">
+    <ClCompile Include="window_board.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,7 +29,7 @@
     <ClInclude Include="app_battleship.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="board_window.h">
+    <ClInclude Include="window_board.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
@@ -37,17 +37,11 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="BATTLESHIPS.rc">
+    <ResourceCompile Include="battleshipGame.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="bitmap1.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="icon1.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="..\..\..\..\..\Pulpit\UNI\sem4\PIGE\WinApi_EN\WinApi_EN\Battleships.ico">
       <Filter>Resource Files</Filter>
     </Image>

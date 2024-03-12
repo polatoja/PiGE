@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{8dfc9ec3-8c9b-4fd6-9379-6fba3456e2e6}</ProjectGuid>
-    <RootNamespace>BATTLESHIPS</RootNamespace>
+    <ProjectGuid>{c49a956d-4fa0-4689-acc7-38cf2b5db0d2}</ProjectGuid>
+    <RootNamespace>battleshipGame</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -120,6 +120,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -131,21 +132,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="app_battleship.cpp" />
-    <ClCompile Include="board_window.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="window_board.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="app_battleship.h" />
-    <ClInclude Include="board_window.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="window_board.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="BATTLESHIPS.rc" />
+    <ResourceCompile Include="battleshipGame.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\..\..\Pulpit\UNI\sem4\PIGE\WinApi_EN\WinApi_EN\Battleships.ico" />
-    <Image Include="bitmap1.bmp" />
-    <Image Include="icon1.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

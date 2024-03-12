@@ -12,8 +12,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE /*prevInstance*/, LPWSTR /*com
     int result = app.run(show_command);
 
     // Create and display Board windows
-    BoardWindow boardMy(app.m_main, 10); // For "BATTLESHIPS - MY"
-    BoardWindow boardPC(app.m_main, 10); // For "BATTLESHIPS - PC"
+    BoardWindow boardMy(app.getMainWindow(), 10); // For "BATTLESHIPS - MY"
+    BoardWindow boardPC(app.getMainWindow(), 10); // For "BATTLESHIPS - PC"
 
     // Run the message loop for Board windows
     MSG msg;
