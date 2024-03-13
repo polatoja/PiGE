@@ -64,7 +64,7 @@ HWND app_battleship::create_board_window(DWORD style, HWND board, DWORD ex_style
 	int windowWidth = size.right - size.left;
 	int windowHeight = size.bottom - size.top;
 
-	int xPos = (screenWidth - windowWidth) / 2; // Center horizontally
+	int xPos = (screenWidth - windowWidth) / 4; // Center horizontally
 	int yPos = screenHeight - (screenHeight / 4) - windowHeight; // 1/4 from the bottom
 
 	HWND hWnd;
@@ -76,7 +76,7 @@ HWND app_battleship::create_board_window(DWORD style, HWND board, DWORD ex_style
 			s_class_name.c_str(), // Class name
 			L"BATTLESHIPS - MY", // Title
 			style, // Window style
-			xPos, // Initial X position
+			2*xPos, // Initial X position
 			yPos, // Initial Y position
 			size.right - size.left, // Width
 			size.bottom - size.top, // Height
@@ -106,9 +106,14 @@ HWND app_battleship::create_board_window(DWORD style, HWND board, DWORD ex_style
 
 	if (hdc)
 	{
+
+		PAINTSTRUCT ps;
+		HDC hdc = BeginPaint(m_popup, &ps);
+
 		// Draw grid cells on the board window
 		DrawGridCells(hdc, 10, 10); // Assuming 10 rows and 10 columns for now
 
+		EndPaint(m_popup, &ps);
 		// Release the device context
 		ReleaseDC(hWnd, hdc);
 	}
@@ -374,14 +379,6 @@ int app_battleship::run(int show_command)
 
 void app_battleship::on_window_move(HWND window, LPWINDOWPOS params)
 {
-	HWND other = (window == m_main) ? m_popup : m_main;
-	RECT other_rc;
-	GetWindowRect(other, &other_rc);
-	SIZE other_size{
-		other_rc.right - other_rc.left,
-		other_rc.bottom - other_rc.top
-	};
-
 	// Calculate the center of the moved window
 	POINT Pw = { params->x, params->y };
 	SIZE Sw = { params->cx, params->cy };
@@ -390,19 +387,12 @@ void app_battleship::on_window_move(HWND window, LPWINDOWPOS params)
 	// Calculate the center of the screen
 	POINT Ss_center = { m_screen_size.x / 2, m_screen_size.y / 2 };
 
-	// Calculate the center of the other window
-	POINT Co = { Ss_center.x - (Cw.x - Ss_center.x), Ss_center.y - (Cw.y - Ss_center.y) };
+	// Calculate the new position of the top-left corner of the moved window
+	POINT Po = { Cw.x - Sw.cx / 2, Cw.y - Sw.cy / 2 };
 
-	// Calculate the new position of the top-left corner of the other window
-	POINT Po = { Co.x - other_size.cx / 2, Co.y - other_size.cy / 2 };
-
-	// Check if the new position is the same as the current position
-	if (Po.x == other_rc.left && Po.y == other_rc.top)
-		return;
-
-	// Set the new position of the other window
+	// Set the new position of the moved window
 	SetWindowPos(
-		other,
+		window,
 		nullptr,
 		Po.x,
 		Po.y,
@@ -410,7 +400,11 @@ void app_battleship::on_window_move(HWND window, LPWINDOWPOS params)
 		0,
 		SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOZORDER);
 
-	update_transparency();
+	// Update the transparency for the moved window
+	if (window == m_main || window == m_popup || window == pc_popup)
+	{
+		update_transparency();
+	}
 }
 
 void app_battleship::update_transparency()
@@ -431,13 +425,16 @@ void app_battleship::SetBoardSize(HWND hWnd, int width, int height) {
 	SetWindowPos(hWnd, NULL, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
 
 	PAINTSTRUCT ps;
-	HDC hdc = BeginPaint(m_popup, &ps);
+	HDC hdc_my = BeginPaint(m_popup, &ps);
+	HDC hdc_pc = BeginPaint(m_popup, &ps);
 
 	int numRows = (width - 37) / 30;
 	// Draw grid cells with content
-	DrawGridCells(hdc, numRows, numRows);
+	DrawGridCells(hdc_my, numRows, numRows);
+	DrawGridCells(hdc_pc, numRows, numRows);
 
 	EndPaint(m_popup, &ps);
+	EndPaint(pc_popup, &ps);
 }
 
 void app_battleship::DrawGridCells(HDC hdc, int numRows, int numCols)
