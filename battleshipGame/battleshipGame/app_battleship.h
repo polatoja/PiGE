@@ -1,5 +1,4 @@
 #pragma once
-#include "window_board.h"
 #include <windows.h>
 #include <string>
 
@@ -25,14 +24,6 @@ private:
 		WPARAM wparam,
 		LPARAM lparam);
 
-	/*
-	LRESULT window_popup_proc(
-		HWND window,
-		UINT message,
-		WPARAM wparam,
-		LPARAM lparam);
-	*/
-
 	HWND create_window(
 		DWORD style,
 		HWND parent = nullptr,
@@ -47,7 +38,6 @@ private:
 	HINSTANCE m_instance;
 	HWND m_main, m_popup, pc_popup;
 
-	board m_board;
 	HBRUSH m_field_brush;
 	POINT m_screen_size;
 

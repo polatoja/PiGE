@@ -21,7 +21,7 @@
     <ClCompile Include="app_battleship.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="window_board.cpp">
+    <ClCompile Include="app_actions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,10 +29,10 @@
     <ClInclude Include="app_battleship.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="window_board.h">
+    <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
+    <ClInclude Include="app_actions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

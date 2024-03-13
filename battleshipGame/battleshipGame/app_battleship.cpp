@@ -3,7 +3,9 @@
 #include <stdexcept>
 #include <windows.h>
 #include <dwmapi.h>
+
 std::wstring const app_battleship::s_class_name{ L"Battleship Window" };
+DWORD const gameboard_style = WS_OVERLAPPED | WS_CAPTION;
 
 bool app_battleship::register_class()
 {
@@ -57,7 +59,7 @@ HWND app_battleship::create_board_window(DWORD style, HWND board, DWORD ex_style
 {
 	RECT size{ 0, 0, 337, 337 }; // Initial size of the window
 	AdjustWindowRectEx(&size, style, false, 0); // Adjust the window size based on the style
-
+	
 	// Calculate the position of the board window
 	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
 	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
@@ -76,7 +78,7 @@ HWND app_battleship::create_board_window(DWORD style, HWND board, DWORD ex_style
 			s_class_name.c_str(), // Class name
 			L"BATTLESHIPS - MY", // Title
 			style, // Window style
-			7*xPos, // Initial X position
+			xPos, // Initial X position
 			yPos, // Initial Y position
 			size.right - size.left, // Width
 			size.bottom - size.top, // Height
@@ -92,7 +94,7 @@ HWND app_battleship::create_board_window(DWORD style, HWND board, DWORD ex_style
 			s_class_name.c_str(), // Class name
 			L"BATTLESHIPS - PC", // Title
 			style, // Window style
-			xPos, // Initial X position
+			7 * xPos, // Initial X position
 			yPos, // Initial Y position
 			size.right - size.left, // Width
 			size.bottom - size.top, // Height
@@ -102,26 +104,6 @@ HWND app_battleship::create_board_window(DWORD style, HWND board, DWORD ex_style
 			this);
 	}
 
-	/*
-	HDC hdc = GetDC(hWnd);
-
-	if (hdc)
-	{
-
-		PAINTSTRUCT ps;
-		HDC hdc1 = BeginPaint(m_popup, &ps);
-		HDC hdc2 = BeginPaint(pc_popup, &ps);
-
-		// Draw grid cells on the board window
-		DrawGridCells(hdc1, 10, 10); // Assuming 10 rows and 10 columns for now
-		DrawGridCells(hdc2, 10, 10);
-
-		EndPaint(m_popup, &ps);
-		EndPaint(pc_popup, &ps);
-		// Release the device context
-		ReleaseDC(hWnd, hdc);
-	}
-	*/
 	return hWnd;
 }
 
@@ -241,7 +223,7 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		HDC hdc_my = BeginPaint(m_popup, &ps);
 		HDC hdc_pc = BeginPaint(pc_popup, &ps);
 
-		int numRows = (337 - 37) / 30;
+		int numRows = 10;
 		// Draw grid cells with content
 		DrawGridCells(hdc_my, numRows, numRows);
 		DrawGridCells(hdc_pc, numRows, numRows);
@@ -252,25 +234,33 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 	case WM_COMMAND:
 	{
 		int wmId = LOWORD(wparam);
+
+		RECT sizeE{ 0, 0, 337, 337 };
+		RECT sizeM{ 0, 0, 502, 502 };
+		RECT sizeH{ 0, 0, 667, 667 };
+
 		// Parse the menu selections:
 		switch (wmId)
 		{
 		case ID_GRID_EASY:
 			// Set board size to 10x10
-			SetBoardSize(m_popup, 337, 337);
-			SetBoardSize(pc_popup, 337, 337);
+			AdjustWindowRectEx(&sizeE, gameboard_style, false, 0);
+			SetBoardSize(m_popup, sizeE.right - sizeE.left, sizeE.bottom - sizeE.top);
+			SetBoardSize(pc_popup, sizeE.right - sizeE.left, sizeE.bottom - sizeE.top);
 			SaveDifficultyLevel("Easy");
 			break;
 		case ID_GRID_MEDIUM:
 			// Set board size to 15x15
-			SetBoardSize(m_popup, 487, 487);
-			SetBoardSize(pc_popup, 487, 487);
+			AdjustWindowRectEx(&sizeM, gameboard_style, false, 0);
+			SetBoardSize(m_popup, sizeM.right - sizeM.left, sizeM.bottom - sizeM.top);
+			SetBoardSize(pc_popup, sizeM.right - sizeM.left, sizeM.bottom - sizeM.top);
 			SaveDifficultyLevel("Medium");
 			break;
 		case ID_GRID_HARD:
 			// Set board size to 20x20
-			SetBoardSize(m_popup, 637, 637);
-			SetBoardSize(pc_popup, 637, 637);
+			AdjustWindowRectEx(&sizeH, gameboard_style, false, 0);
+			SetBoardSize(m_popup, sizeH.right - sizeH.left, sizeH.bottom - sizeH.top);
+			SetBoardSize(pc_popup, sizeH.right - sizeH.left, sizeH.bottom - sizeH.top);
 			SaveDifficultyLevel("Hard");
 			break;
 			// Handle other menu options as needed
@@ -293,14 +283,13 @@ GetSystemMetrics(SM_CYSCREEN) }*/
 	register_class();
 	DWORD main_style = WS_OVERLAPPED | WS_SYSMENU |
 		WS_CAPTION | WS_MINIMIZEBOX;
-	DWORD popup_style = WS_OVERLAPPED | WS_CAPTION;
 
 	m_main = create_window(main_style);
 
-	m_popup = create_board_window(popup_style, m_main, WS_EX_LAYERED, 0);
+	m_popup = create_board_window(gameboard_style, m_main, WS_EX_LAYERED, 0);
 	SetLayeredWindowAttributes(m_popup, 0, 255, LWA_ALPHA);
 
-	pc_popup = create_board_window(popup_style, m_main, WS_EX_LAYERED, 1);
+	pc_popup = create_board_window(gameboard_style, m_main, WS_EX_LAYERED, 1);
 	SetLayeredWindowAttributes(pc_popup, 0, 255, LWA_ALPHA);
 }
 
@@ -373,7 +362,7 @@ void app_battleship::SetBoardSize(HWND hWnd, int width, int height) {
 	HDC hdc_my = BeginPaint(m_popup, &ps);
 	HDC hdc_pc = BeginPaint(pc_popup, &ps);
 
-	int numRows = (width - 37) / 30;
+	int numRows = (width - 7) / 33;
 	// Draw grid cells with content
 	DrawGridCells(hdc_my, numRows, numRows);
 	DrawGridCells(hdc_pc, numRows, numRows);
