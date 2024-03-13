@@ -53,7 +53,7 @@ HWND app_battleship::create_window(DWORD style, HWND parent, DWORD ex_style)
 		this);
 }
 
-HWND app_battleship::create_board_window(DWORD style, HWND board, DWORD ex_style)
+HWND app_battleship::create_board_window(DWORD style, HWND board, DWORD ex_style, int whose)
 {
 	RECT size{ 0, 0, 337, 337 }; // Initial size of the window
 	AdjustWindowRectEx(&size, style, false, 0); // Adjust the window size based on the style
@@ -67,19 +67,40 @@ HWND app_battleship::create_board_window(DWORD style, HWND board, DWORD ex_style
 	int xPos = (screenWidth - windowWidth) / 2; // Center horizontally
 	int yPos = screenHeight - (screenHeight / 4) - windowHeight; // 1/4 from the bottom
 
-	HWND hWnd = CreateWindowExW(
-		ex_style,
-		s_class_name.c_str(), // Class name
-		L"BATTLESHIPS - MY/PC", // Title
-		style, // Window style
-		xPos, // Initial X position
-		yPos, // Initial Y position
-		size.right - size.left, // Width
-		size.bottom - size.top, // Height
-		board, // Parent window
-		nullptr,
-		m_instance,
-		this);
+	HWND hWnd;
+
+	if (whose == 0)
+	{
+		hWnd = CreateWindowExW(
+			ex_style,
+			s_class_name.c_str(), // Class name
+			L"BATTLESHIPS - MY", // Title
+			style, // Window style
+			xPos, // Initial X position
+			yPos, // Initial Y position
+			size.right - size.left, // Width
+			size.bottom - size.top, // Height
+			board, // Parent window
+			nullptr,
+			m_instance,
+			this);
+	}
+	else
+	{
+		hWnd = CreateWindowExW(
+			ex_style,
+			s_class_name.c_str(), // Class name
+			L"BATTLESHIPS - PC", // Title
+			style, // Window style
+			xPos, // Initial X position
+			yPos, // Initial Y position
+			size.right - size.left, // Width
+			size.bottom - size.top, // Height
+			board, // Parent window
+			nullptr,
+			m_instance,
+			this);
+	}
 
 	HDC hdc = GetDC(hWnd);
 
@@ -170,7 +191,7 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		AppendMenuW(hSubMenu, MF_STRING, ID_GRID_MEDIUM, L"Medium (15x15)");
 		AppendMenuW(hSubMenu, MF_STRING, ID_GRID_HARD, L"Hard (20x20)");
 		AppendMenuW(hMenu, MF_POPUP, (UINT_PTR)hSubMenu, L"Grid Size");
-		SetMenu(window, hMenu);
+		SetMenu(m_main, hMenu);
 
 		// Set window icon
 		HICON hIcon = LoadIcon(m_instance, MAKEINTRESOURCE(103));
@@ -190,14 +211,17 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		case ID_GRID_EASY:
 			// Set board size to 10x10
 			SetBoardSize(m_popup, 337, 337);
+			SetBoardSize(pc_popup, 337, 337);
 			break;
 		case ID_GRID_MEDIUM:
 			// Set board size to 15x15
 			SetBoardSize(m_popup, 487, 487);
+			SetBoardSize(pc_popup, 487, 487);
 			break;
 		case ID_GRID_HARD:
 			// Set board size to 20x20
 			SetBoardSize(m_popup, 637, 637);
+			SetBoardSize(pc_popup, 637, 637);
 			break;
 			// Handle other menu options as needed
 		}
@@ -207,6 +231,7 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 	return DefWindowProc(window, message, wparam, lparam);
 }
 
+/*
 LRESULT app_battleship::window_popup_proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
 	switch (message)
@@ -304,13 +329,14 @@ LRESULT app_battleship::window_popup_proc(HWND window, UINT message, WPARAM wpar
 	}
 	return DefWindowProc(window, message, wparam, lparam);
 }
+*/
 
 app_battleship::app_battleship(HINSTANCE instance)
-	/* : m_instance{instance}, m_main{}, m_popup{},
-	m_field_brush{},
-	m_screen_size{ GetSystemMetrics(SM_CXSCREEN),
-	GetSystemMetrics(SM_CYSCREEN) }*/
-	: m_instance{ instance }, m_main{}, m_popup{ }, 
+/* : m_instance{instance}, m_main{}, m_popup{},
+m_field_brush{},
+m_screen_size{ GetSystemMetrics(SM_CXSCREEN),
+GetSystemMetrics(SM_CYSCREEN) }*/
+	: m_instance{ instance }, m_main{}, m_popup{ },
 	m_field_brush{},
 	m_screen_size{ GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN) }
 {
@@ -321,14 +347,19 @@ app_battleship::app_battleship(HINSTANCE instance)
 
 	m_main = create_window(main_style);
 
-	m_popup = create_board_window(popup_style, m_main, WS_EX_LAYERED);
+	m_popup = create_board_window(popup_style, m_main, WS_EX_LAYERED, 0);
 	SetLayeredWindowAttributes(m_popup, 0, 255, LWA_ALPHA);
+
+	pc_popup = create_board_window(popup_style, m_main, WS_EX_LAYERED, 1);
+	SetLayeredWindowAttributes(pc_popup, 0, 255, LWA_ALPHA);
 }
 
 int app_battleship::run(int show_command)
 {
 	ShowWindow(m_main, show_command);
 	ShowWindow(m_popup, SW_SHOWNA);
+	ShowWindow(pc_popup, SW_SHOWNA);
+
 	MSG msg{};
 	BOOL result = TRUE;
 	while ((result = GetMessageW(&msg, nullptr, 0, 0)) != 0)
@@ -398,7 +429,7 @@ void app_battleship::update_transparency()
 void app_battleship::SetBoardSize(HWND hWnd, int width, int height) {
 	// Set the size of the board window
 	SetWindowPos(hWnd, NULL, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
-	
+
 	PAINTSTRUCT ps;
 	HDC hdc = BeginPaint(m_popup, &ps);
 
@@ -411,7 +442,6 @@ void app_battleship::SetBoardSize(HWND hWnd, int width, int height) {
 
 void app_battleship::DrawGridCells(HDC hdc, int numRows, int numCols)
 {
-	register_popup_class();
 	// Define the size of each grid cell and the number of rows and columns
 	const int cellSize = 30; // Grid cell size: 30px
 	const int margin = 5;    // Margin from the edge of the window: 5px

@@ -11,7 +11,7 @@ class app_battleship
 {
 private:
 	bool register_class();
-	bool register_popup_class();
+	//bool register_popup_class();
 	static std::wstring const s_class_name;
 	static LRESULT CALLBACK window_proc_static(
 		HWND window,
@@ -25,11 +25,13 @@ private:
 		WPARAM wparam,
 		LPARAM lparam);
 
+	/*
 	LRESULT window_popup_proc(
 		HWND window,
 		UINT message,
 		WPARAM wparam,
 		LPARAM lparam);
+	*/
 
 	HWND create_window(
 		DWORD style,
@@ -39,10 +41,11 @@ private:
 	HWND create_board_window(
 		DWORD style,
 		HWND parent = nullptr,
-		DWORD ex_style = 0);
+		DWORD ex_style = 0,
+		int whose = 0);
 
 	HINSTANCE m_instance;
-	HWND m_main, m_popup;
+	HWND m_main, m_popup, pc_popup;
 
 	board m_board;
 	HBRUSH m_field_brush;
