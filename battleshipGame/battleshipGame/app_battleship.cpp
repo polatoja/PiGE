@@ -26,7 +26,7 @@ bool app_battleship::register_class()
 
 HWND app_battleship::create_window(DWORD style, HWND parent, DWORD ex_style)
 {
-	RECT size{ 0, 0, 600, 250 }; // Initial size of the window
+	RECT size{ 0, 0, 300, 125 }; // Initial size of the window
 	AdjustWindowRectEx(&size, style, false, 0); // Adjust the window size based on the style
 
 	// Calculate the position of the main window
@@ -64,7 +64,7 @@ HWND app_battleship::create_board_window(DWORD style, HWND board, DWORD ex_style
 	int windowWidth = size.right - size.left;
 	int windowHeight = size.bottom - size.top;
 
-	int xPos = (screenWidth - windowWidth) / 4; // Center horizontally
+	int xPos = (screenWidth - windowWidth) / 8; // Center horizontally
 	int yPos = screenHeight - (screenHeight / 4) - windowHeight; // 1/4 from the bottom
 
 	HWND hWnd;
@@ -76,7 +76,7 @@ HWND app_battleship::create_board_window(DWORD style, HWND board, DWORD ex_style
 			s_class_name.c_str(), // Class name
 			L"BATTLESHIPS - MY", // Title
 			style, // Window style
-			2*xPos, // Initial X position
+			7*xPos, // Initial X position
 			yPos, // Initial Y position
 			size.right - size.left, // Width
 			size.bottom - size.top, // Height
@@ -102,22 +102,26 @@ HWND app_battleship::create_board_window(DWORD style, HWND board, DWORD ex_style
 			this);
 	}
 
+	/*
 	HDC hdc = GetDC(hWnd);
 
 	if (hdc)
 	{
 
 		PAINTSTRUCT ps;
-		HDC hdc = BeginPaint(m_popup, &ps);
+		HDC hdc1 = BeginPaint(m_popup, &ps);
+		HDC hdc2 = BeginPaint(pc_popup, &ps);
 
 		// Draw grid cells on the board window
-		DrawGridCells(hdc, 10, 10); // Assuming 10 rows and 10 columns for now
+		DrawGridCells(hdc1, 10, 10); // Assuming 10 rows and 10 columns for now
+		DrawGridCells(hdc2, 10, 10);
 
 		EndPaint(m_popup, &ps);
+		EndPaint(pc_popup, &ps);
 		// Release the device context
 		ReleaseDC(hWnd, hdc);
 	}
-
+	*/
 	return hWnd;
 }
 
@@ -148,6 +152,30 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		return 0;
 	case WM_CTLCOLORSTATIC:
 		return reinterpret_cast<INT_PTR>(m_field_brush);
+	case WM_SYSKEYDOWN:
+		// Check if Alt + F4 is pressed and the main window is focused
+		if ((wparam == VK_F4) && (lparam & (1 << 29)) && (window == m_main))
+		{
+			// Close the application
+			DestroyWindow(window);
+			return 0;
+		}
+		if ((wparam == VK_SPACE) && (lparam & (1 << 29)) && (window == m_main))
+		{
+			// Show system menu
+			ShowSystemMenu(window);
+			return 0;
+		}
+		break;
+	case WM_RBUTTONDOWN:
+		// Check if the right mouse button is clicked on the taskbar and the main window is focused
+		if ((window == m_main) && (GetForegroundWindow() == window))
+		{
+			// Show system menu
+			ShowSystemMenu(window);
+			return 0;
+		}
+		break;
 	case WM_WINDOWPOSCHANGED:
 		on_window_move(window, reinterpret_cast<LPWINDOWPOS>(lparam));
 		return 0;
@@ -207,6 +235,20 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		m_timerID = SetTimer(window, 1, 1000, nullptr);
 		break;
 	}
+	case WM_PAINT:
+	{
+		PAINTSTRUCT ps;
+		HDC hdc_my = BeginPaint(m_popup, &ps);
+		HDC hdc_pc = BeginPaint(pc_popup, &ps);
+
+		int numRows = (337 - 37) / 30;
+		// Draw grid cells with content
+		DrawGridCells(hdc_my, numRows, numRows);
+		DrawGridCells(hdc_pc, numRows, numRows);
+
+		EndPaint(m_popup, &ps);
+		EndPaint(pc_popup, &ps);
+	}
 	case WM_COMMAND:
 	{
 		int wmId = LOWORD(wparam);
@@ -217,16 +259,19 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 			// Set board size to 10x10
 			SetBoardSize(m_popup, 337, 337);
 			SetBoardSize(pc_popup, 337, 337);
+			SaveDifficultyLevel("Easy");
 			break;
 		case ID_GRID_MEDIUM:
 			// Set board size to 15x15
 			SetBoardSize(m_popup, 487, 487);
 			SetBoardSize(pc_popup, 487, 487);
+			SaveDifficultyLevel("Medium");
 			break;
 		case ID_GRID_HARD:
 			// Set board size to 20x20
 			SetBoardSize(m_popup, 637, 637);
 			SetBoardSize(pc_popup, 637, 637);
+			SaveDifficultyLevel("Hard");
 			break;
 			// Handle other menu options as needed
 		}
@@ -235,113 +280,13 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 	}
 	return DefWindowProc(window, message, wparam, lparam);
 }
-
-/*
-LRESULT app_battleship::window_popup_proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
-{
-	switch (message)
-	{
-	case WM_CLOSE:
-		DestroyWindow(window);
-		return 0;
-	case WM_DESTROY:
-		if (window == m_main)
-			PostQuitMessage(EXIT_SUCCESS);
-		return 0;
-	case WM_CTLCOLORSTATIC:
-		return reinterpret_cast<INT_PTR>(m_field_brush);
-	case WM_WINDOWPOSCHANGED:
-		on_window_move(window, reinterpret_cast<LPWINDOWPOS>(lparam));
-		return 0;
-	case WM_LBUTTONDOWN:
-		// Capture mouse input to the window
-		SetCapture(window);
-		// Get the current mouse position
-		POINT cursorPos;
-		GetCursorPos(&cursorPos);
-		// Convert screen coordinates to client coordinates
-		ScreenToClient(window, &cursorPos);
-		// Store the initial mouse position for dragging
-		m_dragStartPos = cursorPos;
-		return 0;
-	case WM_MOUSEMOVE:
-		if (wparam & MK_LBUTTON)
-		{
-			// Calculate the delta movement of the mouse
-			POINT currentPos;
-			GetCursorPos(&currentPos);
-			ScreenToClient(window, &currentPos);
-			int deltaX = currentPos.x - m_dragStartPos.x;
-			int deltaY = currentPos.y - m_dragStartPos.y;
-			// Move the window accordingly
-			SetWindowPos(window, nullptr, m_dragStartPos.x + deltaX, m_dragStartPos.y + deltaY, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-		}
-		return 0;
-	case WM_LBUTTONUP:
-		// Release mouse capture
-		ReleaseCapture();
-		return 0;
-	case WM_TIMER:
-	{
-		++m_elapsedTime;
-		wchar_t title[256];
-		swprintf(title, 256, L"BATTLESHIPS - STATISTICS - Elapsed Time: %d seconds", m_elapsedTime);
-		SetWindowText(window, title);
-		break;
-	}
-	case WM_CREATE:
-	{
-		// Add menu
-		HMENU hMenu = CreateMenu();
-		HMENU hSubMenu = CreatePopupMenu();
-		AppendMenuW(hSubMenu, MF_STRING, ID_GRID_EASY, L"Easy (10x10)");
-		AppendMenuW(hSubMenu, MF_STRING, ID_GRID_MEDIUM, L"Medium (15x15)");
-		AppendMenuW(hSubMenu, MF_STRING, ID_GRID_HARD, L"Hard (20x20)");
-		AppendMenuW(hMenu, MF_POPUP, (UINT_PTR)hSubMenu, L"Grid Size");
-		SetMenu(window, hMenu);
-
-		// Set window icon
-		HICON hIcon = LoadIcon(m_instance, MAKEINTRESOURCE(103));
-		SendMessage(window, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
-
-		// Start caption timer
-		m_elapsedTime = 0;
-		m_timerID = SetTimer(window, 1, 1000, nullptr);
-		break;
-	}
-	case WM_COMMAND:
-	{
-		int wmId = LOWORD(wparam);
-		// Parse the menu selections:
-		switch (wmId)
-		{
-		case ID_GRID_EASY:
-			// Set board size to 10x10
-			SetBoardSize(m_popup, 100, 100);
-			break;
-		case ID_GRID_MEDIUM:
-			// Set board size to 15x15
-			SetBoardSize(m_popup, 150, 150);
-			break;
-		case ID_GRID_HARD:
-			// Set board size to 20x20
-			SetBoardSize(m_popup, 200, 200);
-			break;
-			// Handle other menu options as needed
-		}
-		break;
-	}
-	}
-	return DefWindowProc(window, message, wparam, lparam);
-}
-*/
 
 app_battleship::app_battleship(HINSTANCE instance)
 /* : m_instance{instance}, m_main{}, m_popup{},
 m_field_brush{},
 m_screen_size{ GetSystemMetrics(SM_CXSCREEN),
 GetSystemMetrics(SM_CYSCREEN) }*/
-	: m_instance{ instance }, m_main{}, m_popup{ },
+	: m_instance{ instance }, m_main{}, m_popup{ }, pc_popup{ },
 	m_field_brush{},
 	m_screen_size{ GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN) }
 {
@@ -423,10 +368,10 @@ void app_battleship::update_transparency()
 void app_battleship::SetBoardSize(HWND hWnd, int width, int height) {
 	// Set the size of the board window
 	SetWindowPos(hWnd, NULL, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
-
+	
 	PAINTSTRUCT ps;
 	HDC hdc_my = BeginPaint(m_popup, &ps);
-	HDC hdc_pc = BeginPaint(m_popup, &ps);
+	HDC hdc_pc = BeginPaint(pc_popup, &ps);
 
 	int numRows = (width - 37) / 30;
 	// Draw grid cells with content
@@ -448,6 +393,9 @@ void app_battleship::DrawGridCells(HDC hdc, int numRows, int numCols)
 	// Set the background color of the device context to white
 	SetBkColor(hdc, RGB(255, 255, 255)); // White color
 
+	//RECT gridRect = { 0, 0, numCols * (cellSize + marginBetweenCells) + margin, numRows * (cellSize + marginBetweenCells) + margin };
+	//FillRect(hdc, &gridRect, (HBRUSH)GetStockObject(WHITE_BRUSH)); // Fill with red color
+
 	// Example: Draw numbers in each grid cell
 	for (int row = 0; row < numRows; ++row)
 	{
@@ -466,4 +414,35 @@ void app_battleship::DrawGridCells(HDC hdc, int numRows, int numCols)
 			//TextOut(hdc, x + cellSize / 2 - 5, y + cellSize / 2 - 5, text, lstrlen(text));
 		}
 	}
+}
+
+void app_battleship::ShowSystemMenu(HWND window)
+{
+	// Get the handle to the system menu
+	HMENU hSysMenu = GetSystemMenu(window, FALSE);
+	if (hSysMenu != nullptr)
+	{
+		// Get the current mouse position
+		POINT pt;
+		GetCursorPos(&pt);
+
+		// Display the system menu at the mouse position
+		TrackPopupMenu(hSysMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_LEFTBUTTON,
+			pt.x, pt.y, 0, window, nullptr);
+	}
+}
+
+// Save the chosen difficulty level to an INI file
+void app_battleship::SaveDifficultyLevel(const std::string& difficulty)
+{
+	WritePrivateProfileStringA("Settings", "DifficultyLevel", difficulty.c_str(), "settings.ini");
+}
+
+// Load the chosen difficulty level from the INI file
+std::string app_battleship::LoadDifficultyLevel()
+{
+	const int bufferSize = 256; // Adjust the buffer size as needed
+	char buffer[bufferSize];
+	GetPrivateProfileStringA("Settings", "DifficultyLevel", "", buffer, bufferSize, "settings.ini");
+	return buffer;
 }

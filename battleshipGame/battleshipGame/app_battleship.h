@@ -55,6 +55,10 @@ private:
 	void update_transparency();
 	void SetBoardSize(HWND hWnd, int width, int height);
 	void DrawGridCells(HDC hdc, int numRows, int numCols);
+	
+	void ShowSystemMenu(HWND window);
+	void SaveDifficultyLevel(const std::string& difficulty);
+	std::string LoadDifficultyLevel();
 
 	POINT m_dragStartPos;
 
