@@ -183,34 +183,19 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		if (window == pc_popup)
 		{
 			cellRedraw = play_game::OnLButtonDown(window, clickPoint, 1);
-			int temp = pc_board[cellRedraw.x][cellRedraw.y];
-			if (temp < 11 && cellRedraw.x != -7)
+			if (cellRedraw.x != -7)
 			{
-				pc_board[cellRedraw.x][cellRedraw.y] = temp + 10;
-				temp = pc_board[cellRedraw.x][cellRedraw.y];
+				int temp = pc_board[cellRedraw.x][cellRedraw.y];
+				if (temp < 11)
+				{
+					pc_board[cellRedraw.x][cellRedraw.y] = temp + 10;
+					temp = pc_board[cellRedraw.x][cellRedraw.y];
+				}
 			}
-			
 		}
 
 		return 0;
 	}
-	/*
-	case WM_MOUSEMOVE:
-	{
-		if (wparam & MK_LBUTTON)
-		{
-			// Calculate the delta movement of the mouse
-			POINT currentPos;
-			GetCursorPos(&currentPos);
-			ScreenToClient(window, &currentPos);
-			int deltaX = currentPos.x - m_dragStartPos.x;
-			int deltaY = currentPos.y - m_dragStartPos.y;
-			// Move the window accordingly
-			SetWindowPos(window, nullptr, m_dragStartPos.x + deltaX, m_dragStartPos.y + deltaY, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-		}
-		return 0;
-	}
-	*/
 	case WM_TIMER:
 	{
 		++m_elapsedTime;
@@ -268,7 +253,7 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		RECT sizeE{ 0, 0, 337, 337 };
 		RECT sizeM{ 0, 0, 502, 502 };
 		RECT sizeH{ 0, 0, 667, 667 };
-
+		int rnV1, rnV2;
 		// Parse the menu selections:
 		switch (wmId)
 		{
@@ -278,6 +263,11 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 			SetBoardSize(m_popup, sizeE.right - sizeE.left, sizeE.bottom - sizeE.top);
 			SetBoardSize(pc_popup, sizeE.right - sizeE.left, sizeE.bottom - sizeE.top);
 			SaveDifficultyLevel("Easy");
+
+			rnV1 = board::my_random(1, 10000);
+			my_board = board::place_ships(10, rnV1);
+			rnV2 = board::my_random(10000, 100000000);
+			pc_board = board::place_ships(10, rnV2);
 			break;
 		case ID_GRID_MEDIUM:
 			// Set board size to 15x15
@@ -285,6 +275,11 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 			SetBoardSize(m_popup, sizeM.right - sizeM.left, sizeM.bottom - sizeM.top);
 			SetBoardSize(pc_popup, sizeM.right - sizeM.left, sizeM.bottom - sizeM.top);
 			SaveDifficultyLevel("Medium");
+
+			rnV1 = board::my_random(1, 10000);
+			my_board = board::place_ships(10, rnV1);
+			rnV2 = board::my_random(10000, 100000000);
+			pc_board = board::place_ships(10, rnV2);
 			break;
 		case ID_GRID_HARD:
 			// Set board size to 20x20
@@ -292,6 +287,11 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 			SetBoardSize(m_popup, sizeH.right - sizeH.left, sizeH.bottom - sizeH.top);
 			SetBoardSize(pc_popup, sizeH.right - sizeH.left, sizeH.bottom - sizeH.top);
 			SaveDifficultyLevel("Hard");
+
+			rnV1 = board::my_random(1, 10000);
+			my_board = board::place_ships(10, rnV1);
+			rnV2 = board::my_random(10000, 100000000);
+			pc_board = board::place_ships(10, rnV2);
 			break;
 			// Handle other menu options as needed
 		}
@@ -417,8 +417,8 @@ void app_battleship::DrawGridCells_my(HDC hdc, int numRows, int numCols)
 		for (int col = 0; col < numCols; ++col)
 		{
 			// Calculate the position of the current cell
-			int x = margin + col * (cellSize + marginBetweenCells);
-			int y = margin + row * (cellSize + marginBetweenCells);
+			int x = margin + row * (cellSize + marginBetweenCells);
+			int y = margin + col * (cellSize + marginBetweenCells);
 
 			// Draw the background of the cell (rounded rectangle)
 			RoundRect(hdc, x, y, x + cellSize, y + cellSize, roundRadius, roundRadius);
@@ -460,7 +460,6 @@ void app_battleship::DrawGridCells_pc(HDC hdc, int numRows, int numCols)
 
 			int shipOnPos = pc_board[row][col];
 
-
 			if (shipOnPos > 10 && shipOnPos < 20)
 			{
 				SelectObject(hdc, GetStockObject(DC_BRUSH));
@@ -468,6 +467,15 @@ void app_battleship::DrawGridCells_pc(HDC hdc, int numRows, int numCols)
 
 				SetDCBrushColor(hdc, RGB(255, 0, 0));
 				SetBkColor(hdc, RGB(255, 0, 0));
+				SetDCPenColor(hdc, RGB(0, 0, 0));
+			}
+			else if (shipOnPos == 20)
+			{
+				SelectObject(hdc, GetStockObject(DC_BRUSH));
+				SelectObject(hdc, GetStockObject(DC_PEN));
+
+				SetDCBrushColor(hdc, RGB(113, 184, 255));
+				SetBkColor(hdc, RGB(113, 184, 255));
 				SetDCPenColor(hdc, RGB(0, 0, 0));
 			}
 			else
@@ -489,8 +497,21 @@ void app_battleship::DrawGridCells_pc(HDC hdc, int numRows, int numCols)
 
 			if (shipOnPos != 10)
 			{
-				swprintf(text, 2, L"%d", shipOnPos); // Example: Row-major numbering
-				TextOut(hdc, x + cellSize / 2 - 5, y + cellSize / 2 - 5, text, lstrlen(text));
+				if (shipOnPos > 0 && shipOnPos < 5)
+				{
+					swprintf(text, 2, L"%d", shipOnPos); // Example: Row-major numbering
+					TextOut(hdc, x + cellSize / 2 - 5, y + cellSize / 2 - 5, text, lstrlen(text));
+				}
+				if (shipOnPos > 10 && shipOnPos < 20)
+				{
+					swprintf(text, 2, L"X"); // Example: Row-major numbering
+					TextOut(hdc, x + cellSize / 2 - 5, y + cellSize / 2 - 5, text, lstrlen(text));
+				}
+				if (shipOnPos == 20)
+				{
+					swprintf(text, 2, L".");
+					TextOut(hdc, x + cellSize / 2 - 5, y + cellSize / 2 - 5, text, lstrlen(text));
+				}
 			}
 		}
 	}

@@ -33,9 +33,9 @@ POINT play_game::OnLButtonDown(HWND hWindow, POINT clickPoint, int my_or_pc)
 
 	RECT redrawField;
 
-	redrawField.left = app_battleship::margin + board_x * app_battleship::cellSize - 1;
+	redrawField.left = app_battleship::margin + board_x * cellSpacing - 1;
 	redrawField.right = redrawField.left + app_battleship::cellSize + 1;
-	redrawField.top = app_battleship::margin + board_y * app_battleship::cellSize - 1;
+	redrawField.top = app_battleship::margin + board_y * cellSpacing - 1;
 	redrawField.bottom = redrawField.top + app_battleship::cellSize + 1;
 
 	InvalidateRect(hWindow, &redrawField, FALSE);
