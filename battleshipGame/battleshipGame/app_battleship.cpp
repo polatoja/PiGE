@@ -259,39 +259,39 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		{
 		case ID_GRID_EASY:
 			// Set board size to 10x10
+			rnV1 = board::my_random(1, 10000);
+			my_board = board::place_ships(10, rnV1);
+			rnV2 = board::my_random(10000, 100000000);
+			pc_board = board::place_ships(10, rnV2);
+
 			AdjustWindowRectEx(&sizeE, gameboard_style, false, 0);
 			SetBoardSize(m_popup, sizeE.right - sizeE.left, sizeE.bottom - sizeE.top);
 			SetBoardSize(pc_popup, sizeE.right - sizeE.left, sizeE.bottom - sizeE.top);
 			SaveDifficultyLevel("Easy");
-
-			rnV1 = board::my_random(1, 10000);
-			my_board = board::place_ships(10, rnV1);
-			rnV2 = board::my_random(10000, 100000000);
-			pc_board = board::place_ships(10, rnV2);
 			break;
 		case ID_GRID_MEDIUM:
 			// Set board size to 15x15
+			rnV1 = board::my_random(1, 10000);
+			my_board = board::place_ships(15, rnV1);
+			rnV2 = board::my_random(10000, 100000000);
+			pc_board = board::place_ships(15, rnV2);
+
 			AdjustWindowRectEx(&sizeM, gameboard_style, false, 0);
 			SetBoardSize(m_popup, sizeM.right - sizeM.left, sizeM.bottom - sizeM.top);
 			SetBoardSize(pc_popup, sizeM.right - sizeM.left, sizeM.bottom - sizeM.top);
 			SaveDifficultyLevel("Medium");
-
-			rnV1 = board::my_random(1, 10000);
-			my_board = board::place_ships(10, rnV1);
-			rnV2 = board::my_random(10000, 100000000);
-			pc_board = board::place_ships(10, rnV2);
 			break;
 		case ID_GRID_HARD:
 			// Set board size to 20x20
+			rnV1 = board::my_random(1, 10000);
+			my_board = board::place_ships(20, rnV1);
+			rnV2 = board::my_random(10000, 100000000);
+			pc_board = board::place_ships(20, rnV2);
+
 			AdjustWindowRectEx(&sizeH, gameboard_style, false, 0);
 			SetBoardSize(m_popup, sizeH.right - sizeH.left, sizeH.bottom - sizeH.top);
 			SetBoardSize(pc_popup, sizeH.right - sizeH.left, sizeH.bottom - sizeH.top);
 			SaveDifficultyLevel("Hard");
-
-			rnV1 = board::my_random(1, 10000);
-			my_board = board::place_ships(10, rnV1);
-			rnV2 = board::my_random(10000, 100000000);
-			pc_board = board::place_ships(10, rnV2);
 			break;
 			// Handle other menu options as needed
 		}
@@ -455,8 +455,8 @@ void app_battleship::DrawGridCells_pc(HDC hdc, int numRows, int numCols)
 		for (int col = 0; col < numCols; ++col)
 		{
 			// Calculate the position of the current cell
-			int x = margin + col * (cellSize + marginBetweenCells);
-			int y = margin + row * (cellSize + marginBetweenCells);
+			int x = margin + row * (cellSize + marginBetweenCells);
+			int y = margin + col * (cellSize + marginBetweenCells);
 
 			int shipOnPos = pc_board[row][col];
 
