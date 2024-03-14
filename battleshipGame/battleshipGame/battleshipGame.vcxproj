@@ -131,13 +131,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="app_actions.cpp" />
     <ClCompile Include="app_battleship.cpp" />
+    <ClCompile Include="board.cpp" />
+    <ClCompile Include="draw_statistics.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="app_actions.h" />
     <ClInclude Include="app_battleship.h" />
+    <ClInclude Include="board.h" />
+    <ClInclude Include="draw_statistics.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

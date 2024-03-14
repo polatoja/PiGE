@@ -1,5 +1,4 @@
 #include "app_actions.h"
-
 #include <vector>
 #include <algorithm>
 #include <ctime>

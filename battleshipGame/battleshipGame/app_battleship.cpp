@@ -1,11 +1,17 @@
 #include "app_battleship.h"
+#include "draw_statistics.h"
+#include "board.h"
 #include "resource.h"
 #include <stdexcept>
 #include <windows.h>
 #include <dwmapi.h>
 
 std::wstring const app_battleship::s_class_name{ L"Battleship Window" };
+
 DWORD const gameboard_style = WS_OVERLAPPED | WS_CAPTION;
+
+static std::vector<std::vector<int>> my_board;
+static std::vector<std::vector<int>> pc_board;
 
 bool app_battleship::register_class()
 {
@@ -28,7 +34,7 @@ bool app_battleship::register_class()
 
 HWND app_battleship::create_window(DWORD style, HWND parent, DWORD ex_style)
 {
-	RECT size{ 0, 0, 300, 125 }; // Initial size of the window
+	RECT size{ 0, 0, draw_statistics::statWtotal, draw_statistics::statHtotal };
 	AdjustWindowRectEx(&size, style, false, 0); // Adjust the window size based on the style
 
 	// Calculate the position of the main window
@@ -73,6 +79,8 @@ HWND app_battleship::create_board_window(DWORD style, HWND board, DWORD ex_style
 
 	if (whose == 0)
 	{
+		int rnV1 = board::my_random(1, 10000);
+		my_board = board::place_ships(10, rnV1);
 		hWnd = CreateWindowExW(
 			ex_style,
 			s_class_name.c_str(), // Class name
@@ -89,6 +97,8 @@ HWND app_battleship::create_board_window(DWORD style, HWND board, DWORD ex_style
 	}
 	else
 	{
+		int rnV2 = board::my_random(10000, 100000000);
+		pc_board = board::place_ships(10, rnV2);
 		hWnd = CreateWindowExW(
 			ex_style,
 			s_class_name.c_str(), // Class name
@@ -220,16 +230,22 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 	case WM_PAINT:
 	{
 		PAINTSTRUCT ps;
+		PAINTSTRUCT ps_stat;
+
 		HDC hdc_my = BeginPaint(m_popup, &ps);
 		HDC hdc_pc = BeginPaint(pc_popup, &ps);
+		HDC hdc_stat = BeginPaint(m_main, &ps_stat);
 
 		int numRows = 10;
 		// Draw grid cells with content
-		DrawGridCells(hdc_my, numRows, numRows);
-		DrawGridCells(hdc_pc, numRows, numRows);
+		DrawGridCells_my(hdc_my, numRows, numRows);
+		DrawGridCells_pc(hdc_pc, numRows, numRows);
+		draw_statistics::Draw(hdc_stat);
 
 		EndPaint(m_popup, &ps);
 		EndPaint(pc_popup, &ps);
+		EndPaint(m_main, &ps_stat);
+		break;
 	}
 	case WM_COMMAND:
 	{
@@ -364,14 +380,14 @@ void app_battleship::SetBoardSize(HWND hWnd, int width, int height) {
 
 	int numRows = (width - 7) / 33;
 	// Draw grid cells with content
-	DrawGridCells(hdc_my, numRows, numRows);
-	DrawGridCells(hdc_pc, numRows, numRows);
+	DrawGridCells_my(hdc_my, numRows, numRows);
+	DrawGridCells_pc(hdc_pc, numRows, numRows);
 
 	EndPaint(m_popup, &ps);
 	EndPaint(pc_popup, &ps);
 }
 
-void app_battleship::DrawGridCells(HDC hdc, int numRows, int numCols)
+void app_battleship::DrawGridCells_my(HDC hdc, int numRows, int numCols)
 {
 	// Define the size of each grid cell and the number of rows and columns
 	const int cellSize = 30; // Grid cell size: 30px
@@ -399,8 +415,47 @@ void app_battleship::DrawGridCells(HDC hdc, int numRows, int numCols)
 
 			// Draw content in the cell (e.g., numbers)
 			WCHAR text[2];
-			//swprintf(text, 2, L"%d%d", row, col); // Example: Row-major numbering
-			//TextOut(hdc, x + cellSize / 2 - 5, y + cellSize / 2 - 5, text, lstrlen(text));
+			int shipOnPos = my_board[row][col];
+			if (shipOnPos != 0)
+			{
+				swprintf(text, 2, L"%d", my_board[row][col]); // Example: Row-major numbering
+				TextOut(hdc, x + cellSize / 2 - 5, y + cellSize / 2 - 5, text, lstrlen(text));
+			}
+		}
+	}
+}
+
+void app_battleship::DrawGridCells_pc(HDC hdc, int numRows, int numCols)
+{
+	// Define the size of each grid cell and the number of rows and columns
+	const int cellSize = 30; // Grid cell size: 30px
+	const int margin = 5;    // Margin from the edge of the window: 5px
+	const int marginBetweenCells = 3; // Margin between grid cells: 3px
+	const int roundRadius = 5; // Radius for rounded corners
+
+	// Set the background color of the device context to white
+	SetBkColor(hdc, RGB(255, 255, 255)); // White color
+
+	//RECT gridRect = { 0, 0, numCols * (cellSize + marginBetweenCells) + margin, numRows * (cellSize + marginBetweenCells) + margin };
+	//FillRect(hdc, &gridRect, (HBRUSH)GetStockObject(WHITE_BRUSH)); // Fill with red color
+
+	// Example: Draw numbers in each grid cell
+	for (int row = 0; row < numRows; ++row)
+	{
+		for (int col = 0; col < numCols; ++col)
+		{
+			// Calculate the position of the current cell
+			int x = margin + col * (cellSize + marginBetweenCells);
+			int y = margin + row * (cellSize + marginBetweenCells);
+
+			// Draw the background of the cell (rounded rectangle)
+			RoundRect(hdc, x, y, x + cellSize, y + cellSize, roundRadius, roundRadius);
+
+			// Draw content in the cell (e.g., numbers)
+			WCHAR text[2];
+			
+			swprintf(text, 2, L"%d",pc_board[row][col]); // Example: Row-major numbering
+			TextOut(hdc, x + cellSize / 2 - 5, y + cellSize / 2 - 5, text, lstrlen(text));
 		}
 	}
 }

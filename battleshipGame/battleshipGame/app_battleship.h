@@ -44,8 +44,10 @@ private:
 	void on_window_move(HWND window, LPWINDOWPOS params);
 	void update_transparency();
 	void SetBoardSize(HWND hWnd, int width, int height);
-	void DrawGridCells(HDC hdc, int numRows, int numCols);
-	
+
+	void DrawGridCells_my(HDC hdc, int numRows, int numCols);
+	void DrawGridCells_pc(HDC hdc, int numRows, int numCols);
+
 	void ShowSystemMenu(HWND window);
 	void SaveDifficultyLevel(const std::string& difficulty);
 	std::string LoadDifficultyLevel();
