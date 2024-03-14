@@ -67,7 +67,7 @@ HWND app_battleship::create_board_window(DWORD style, HWND board, DWORD ex_style
 {
 	RECT size{ 0, 0, 337, 337 }; // Initial size of the window
 	AdjustWindowRectEx(&size, style, false, 0); // Adjust the window size based on the style
-	
+
 	// Calculate the position of the board window
 	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
 	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
@@ -193,7 +193,7 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 
 					if (temp == 11)
 					{
-						Ship1Tanked(cellRedraw);
+						Ship1Sunk(cellRedraw);
 					}
 				}
 			}
@@ -227,8 +227,8 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		// Start caption timer
 		m_elapsedTime = 0;
 		if (m_timerID == NULL)
-		m_timerID = SetTimer(window, 1, 1000, nullptr);
-		
+			m_timerID = SetTimer(window, 1, 1000, nullptr);
+
 		break;
 	}
 	case WM_PAINT:
@@ -240,10 +240,10 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		HDC hdc_pc = BeginPaint(pc_popup, &ps);
 		HDC hdc_stat = BeginPaint(m_main, &ps_stat);
 
-		int numRows = 10;
+
 		// Draw grid cells with content
-		DrawGridCells_my(hdc_my, numRows, numRows);
-		DrawGridCells_pc(hdc_pc, numRows, numRows);
+		DrawGridCells_my(hdc_my);
+		DrawGridCells_pc(hdc_pc);
 		draw_statistics::Draw(hdc_stat);
 
 		EndPaint(m_popup, &ps);
@@ -269,8 +269,6 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 			rnV2 = board::my_random(10000, 100000000);
 			pc_board = board::place_ships(10, rnV2);
 
-			sizeOfBoard = 10;
-
 			AdjustWindowRectEx(&sizeE, gameboard_style, false, 0);
 			SetBoardSize(m_popup, sizeE.right - sizeE.left, sizeE.bottom - sizeE.top);
 			SetBoardSize(pc_popup, sizeE.right - sizeE.left, sizeE.bottom - sizeE.top);
@@ -283,8 +281,6 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 			rnV2 = board::my_random(10000, 100000000);
 			pc_board = board::place_ships(15, rnV2);
 
-			sizeOfBoard = 15;
-
 			AdjustWindowRectEx(&sizeM, gameboard_style, false, 0);
 			SetBoardSize(m_popup, sizeM.right - sizeM.left, sizeM.bottom - sizeM.top);
 			SetBoardSize(pc_popup, sizeM.right - sizeM.left, sizeM.bottom - sizeM.top);
@@ -296,8 +292,6 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 			my_board = board::place_ships(20, rnV1);
 			rnV2 = board::my_random(10000, 100000000);
 			pc_board = board::place_ships(20, rnV2);
-
-			sizeOfBoard = 20;
 
 			AdjustWindowRectEx(&sizeH, gameboard_style, false, 0);
 			SetBoardSize(m_popup, sizeH.right - sizeH.left, sizeH.bottom - sizeH.top);
@@ -394,27 +388,20 @@ void app_battleship::update_transparency()
 void app_battleship::SetBoardSize(HWND hWnd, int width, int height) {
 	// Set the size of the board window
 	SetWindowPos(hWnd, NULL, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
-	
-	PAINTSTRUCT ps;
-	HDC hdc_my = BeginPaint(m_popup, &ps);
-	HDC hdc_pc = BeginPaint(pc_popup, &ps);
 
-	int numRows = (width - 7) / 33;
-	// Draw grid cells with content
-	DrawGridCells_my(hdc_my, numRows, numRows);
-	DrawGridCells_pc(hdc_pc, numRows, numRows);
-
-	EndPaint(m_popup, &ps);
-	EndPaint(pc_popup, &ps);
+	InvalidateRect(hWnd, NULL, TRUE);
 }
 
-void app_battleship::DrawGridCells_my(HDC hdc, int numRows, int numCols)
+void app_battleship::DrawGridCells_my(HDC hdc)
 {
 	// Define the size of each grid cell and the number of rows and columns
 	const int cellSize = 30; // Grid cell size: 30px
 	const int margin = 5;    // Margin from the edge of the window: 5px
 	const int marginBetweenCells = 3; // Margin between grid cells: 3px
 	const int roundRadius = 5; // Radius for rounded corners
+
+	int numRows = my_board.size();
+	int numCols = numRows;
 
 	// Set the background color of the device context to white
 	SetBkColor(hdc, RGB(255, 255, 255)); // White color
@@ -446,13 +433,16 @@ void app_battleship::DrawGridCells_my(HDC hdc, int numRows, int numCols)
 	}
 }
 
-void app_battleship::DrawGridCells_pc(HDC hdc, int numRows, int numCols)
+void app_battleship::DrawGridCells_pc(HDC hdc)
 {
 	// Define the size of each grid cell and the number of rows and columns
 	const int cellSize = 30; // Grid cell size: 30px
 	const int margin = 5;    // Margin from the edge of the window: 5px
 	const int marginBetweenCells = 3; // Margin between grid cells: 3px
 	const int roundRadius = 5; // Radius for rounded corners
+
+	int numRows = pc_board.size();
+	int numCols = numRows;
 
 	// Set the background color of the device context to white
 	SetBkColor(hdc, RGB(255, 255, 255)); // White color
@@ -487,6 +477,15 @@ void app_battleship::DrawGridCells_pc(HDC hdc, int numRows, int numCols)
 
 				SetDCBrushColor(hdc, RGB(113, 184, 255));
 				SetBkColor(hdc, RGB(113, 184, 255));
+				SetDCPenColor(hdc, RGB(0, 0, 0));
+			}
+			else if (shipOnPos == 21)
+			{
+				SelectObject(hdc, GetStockObject(DC_BRUSH));
+				SelectObject(hdc, GetStockObject(DC_PEN));
+
+				SetDCBrushColor(hdc, RGB(247, 213, 116));
+				SetBkColor(hdc, RGB(247, 213, 116));
 				SetDCPenColor(hdc, RGB(0, 0, 0));
 			}
 			else
@@ -559,10 +558,9 @@ std::string app_battleship::LoadDifficultyLevel()
 	return buffer;
 }
 
-void app_battleship::Ship1Tanked(POINT position)
+void app_battleship::Ship1Sunk(POINT position)
 {
 	// our ship position.x position.y
-
 	int offsets[3] = { -1, 0, 1 };
 
 	// Iterate over neighboring cells
@@ -574,15 +572,49 @@ void app_battleship::Ship1Tanked(POINT position)
 			int neighborY = position.y + yOffset;
 
 			// Check if the neighbor cell is within bounds
-			if (neighborX >= 0 && neighborX < sizeOfBoard && neighborY >= 0 && neighborY < sizeOfBoard)
+			if (neighborX >= 0 && neighborX < pc_board.size() && neighborY >= 0 && neighborY < pc_board.size())
 			{
-				if (!(neighborX == 0 && neighborY == 0))
+				int temp = pc_board[neighborX][neighborY];
+				if (temp == 10)
 				{
-					int temp = pc_board[neighborX][neighborY];
-					if (temp < 10)
-					{
-						pc_board[neighborX][neighborY] = temp + 11;
-					}
+					pc_board[neighborX][neighborY] = temp + 11;
+					
+					RECT redrawField;
+					int cellSpacing = app_battleship::cellSize + app_battleship::marginBetweenCells;
+
+					redrawField.left = app_battleship::margin + neighborX * cellSpacing - 1;
+					redrawField.right = redrawField.left + app_battleship::cellSize + 1;
+					redrawField.top = app_battleship::margin + neighborY * cellSpacing - 1;
+					redrawField.bottom = redrawField.top + app_battleship::cellSize + 1;
+
+					InvalidateRect(pc_popup, &redrawField, FALSE);
+				}
+			}
+		}
+	}
+}
+
+void app_battleship::Ship2Sunk(POINT position)
+{
+	bool isSunk = false;
+	// our ship position.x position.y
+	int offsets[3] = { -1, 0, 1 };
+
+	// Iterate over neighboring cells
+	for (int xOffset : offsets)
+	{
+		for (int yOffset : offsets)
+		{
+			int neighborX = position.x + xOffset;
+			int neighborY = position.y + yOffset;
+
+			// Check if the neighbor cell is within bounds
+			if (neighborX >= 0 && neighborX < pc_board.size() && neighborY >= 0 && neighborY < pc_board.size())
+			{
+				int temp = pc_board[neighborX][neighborY];
+				if (temp == 10)
+				{
+					pc_board[neighborX][neighborY] = temp + 11;
 				}
 			}
 		}

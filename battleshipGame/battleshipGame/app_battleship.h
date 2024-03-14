@@ -45,12 +45,12 @@ private:
 	void update_transparency();
 
 	void SetBoardSize(HWND hWnd, int width, int height);
-	int sizeOfBoard;
 
-	void DrawGridCells_my(HDC hdc, int numRows, int numCols);
-	void DrawGridCells_pc(HDC hdc, int numRows, int numCols);
+	void DrawGridCells_my(HDC hdc);
+	void DrawGridCells_pc(HDC hdc);
 
-	void Ship1Tanked(POINT position);
+	void Ship1Sunk(POINT position);
+	void Ship2Sunk(POINT position);
 
 	void ShowSystemMenu(HWND window);
 	void SaveDifficultyLevel(const std::string& difficulty);
