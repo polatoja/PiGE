@@ -175,17 +175,28 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		return 0;
 	case WM_LBUTTONDOWN:
 	{
-		POINT clickPoint;
+		POINT clickPoint, cellRedraw;
 
 		clickPoint.x = GET_X_LPARAM(lparam);
 		clickPoint.y = GET_Y_LPARAM(lparam);
 
 		if (window == pc_popup)
-			play_game::OnLButtonDown(window, clickPoint, 1);
-		//ReleaseCapture();
+		{
+			cellRedraw = play_game::OnLButtonDown(window, clickPoint, 1);
+			int temp = pc_board[cellRedraw.x][cellRedraw.y];
+			if (temp < 11 && cellRedraw.x != -7)
+			{
+				pc_board[cellRedraw.x][cellRedraw.y] = temp + 10;
+				temp = pc_board[cellRedraw.x][cellRedraw.y];
+			}
+			
+		}
+
 		return 0;
 	}
+	/*
 	case WM_MOUSEMOVE:
+	{
 		if (wparam & MK_LBUTTON)
 		{
 			// Calculate the delta movement of the mouse
@@ -198,48 +209,8 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 			SetWindowPos(window, nullptr, m_dragStartPos.x + deltaX, m_dragStartPos.y + deltaY, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 		}
 		return 0;
-	case WM_LBUTTONUP:
-	{
-		/*
-		// Capture mouse input to the window
-		SetCapture(window);
-		// Get the current mouse position
-		POINT cursorPos;
-		GetCursorPos(&cursorPos);
-		// Convert screen coordinates to client coordinates
-		ScreenToClient(window, &cursorPos);
-		// Store the initial mouse position for dragging
-		m_dragStartPos = cursorPos;
-		
-		// turning blue
-		const int CELL_SIZE = 30;
-		const int MARGIN = 5;
-
-		// Extract mouse coordinates from the message parameters
-		int xPos = GET_X_LPARAM(lparam);
-		int yPos = GET_Y_LPARAM(lparam);
-
-		// Calculate the clicked grid cell based on mouse coordinates
-		int col = (xPos - MARGIN) / CELL_SIZE;
-		int row = (yPos - MARGIN) / CELL_SIZE;
-
-		// Determine the position of the top-left corner of the clicked grid cell
-		int cellX = col * CELL_SIZE + MARGIN;
-		int cellY = row * CELL_SIZE + MARGIN;
-
-		// Define and initialize the RECT structure for the clicked grid cell
-		RECT cellRect = { cellX, cellY, cellX + CELL_SIZE, cellY + CELL_SIZE };
-
-		// Change the color of the clicked grid cell to blue
-		HDC hdc = GetDC(window);
-		HBRUSH hBrush = CreateSolidBrush(RGB(0, 0, 255)); // Blue color
-		FillRect(hdc, &cellRect, hBrush);
-		DeleteObject(hBrush);
-		ReleaseDC(window, hdc);
-
-		*/
-		return 0;
 	}
+	*/
 	case WM_TIMER:
 	{
 		++m_elapsedTime;
@@ -455,9 +426,9 @@ void app_battleship::DrawGridCells_my(HDC hdc, int numRows, int numCols)
 			// Draw content in the cell (e.g., numbers)
 			WCHAR text[2];
 			int shipOnPos = my_board[row][col];
-			if (shipOnPos != 0)
+			if (shipOnPos != 10)
 			{
-				swprintf(text, 2, L"%d", my_board[row][col]); // Example: Row-major numbering
+				swprintf(text, 2, L"%d", shipOnPos); // Example: Row-major numbering
 				TextOut(hdc, x + cellSize / 2 - 5, y + cellSize / 2 - 5, text, lstrlen(text));
 			}
 		}
@@ -487,14 +458,40 @@ void app_battleship::DrawGridCells_pc(HDC hdc, int numRows, int numCols)
 			int x = margin + col * (cellSize + marginBetweenCells);
 			int y = margin + row * (cellSize + marginBetweenCells);
 
+			int shipOnPos = pc_board[row][col];
+
+
+			if (shipOnPos > 10 && shipOnPos < 20)
+			{
+				SelectObject(hdc, GetStockObject(DC_BRUSH));
+				SelectObject(hdc, GetStockObject(DC_PEN));
+
+				SetDCBrushColor(hdc, RGB(255, 0, 0));
+				SetBkColor(hdc, RGB(255, 0, 0));
+				SetDCPenColor(hdc, RGB(0, 0, 0));
+			}
+			else
+			{
+				SelectObject(hdc, GetStockObject(DC_BRUSH));
+				SelectObject(hdc, GetStockObject(DC_PEN));
+
+				SetDCBrushColor(hdc, RGB(255, 255, 255));
+				SetBkColor(hdc, RGB(255, 255, 255));
+				SetDCPenColor(hdc, RGB(0, 0, 0));
+			}
+
+
 			// Draw the background of the cell (rounded rectangle)
 			RoundRect(hdc, x, y, x + cellSize, y + cellSize, roundRadius, roundRadius);
 
 			// Draw content in the cell (e.g., numbers)
 			WCHAR text[2];
-			
-			swprintf(text, 2, L"%d",pc_board[row][col]); // Example: Row-major numbering
-			TextOut(hdc, x + cellSize / 2 - 5, y + cellSize / 2 - 5, text, lstrlen(text));
+
+			if (shipOnPos != 10)
+			{
+				swprintf(text, 2, L"%d", shipOnPos); // Example: Row-major numbering
+				TextOut(hdc, x + cellSize / 2 - 5, y + cellSize / 2 - 5, text, lstrlen(text));
+			}
 		}
 	}
 }

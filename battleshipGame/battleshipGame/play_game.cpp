@@ -2,10 +2,11 @@
 #include <dwmapi.h>
 
 #include "play_game.h"
+#include "board.h"
 #include "app_battleship.h"
 
 
-void play_game::OnLButtonDown(HWND hWindow, POINT clickPoint, int my_or_pc)
+POINT play_game::OnLButtonDown(HWND hWindow, POINT clickPoint, int my_or_pc)
 {
 	int cellSpacing = app_battleship::cellSize + app_battleship::marginBetweenCells;
 	int board_x = clickPoint.x - app_battleship::margin + cellSpacing;
@@ -30,8 +31,6 @@ void play_game::OnLButtonDown(HWND hWindow, POINT clickPoint, int my_or_pc)
 		board_y = (board_y / cellSpacing) - 1;
 	}
 
-	// effect board
-
 	RECT redrawField;
 
 	redrawField.left = app_battleship::margin + board_x * app_battleship::cellSize - 1;
@@ -40,4 +39,6 @@ void play_game::OnLButtonDown(HWND hWindow, POINT clickPoint, int my_or_pc)
 	redrawField.bottom = redrawField.top + app_battleship::cellSize + 1;
 
 	InvalidateRect(hWindow, &redrawField, FALSE);
+
+	return POINT(board_x, board_y);
 };

@@ -117,9 +117,9 @@ std::vector<std::vector<int>> board::place_ships(int boardSize, int randomVal)
     {
         for (int j = 0; j < boardSize; ++j)
         {
-            if (grid[i][j] == -1)
+            if (grid[i][j] == -1 || grid[i][j] == 0)
             {
-                grid[i][j] = 0;
+                grid[i][j] = 10;
             }
         }
     }
