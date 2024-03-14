@@ -60,4 +60,10 @@ private:
 public:
 	app_battleship(HINSTANCE instance);
 	int run(int show_command);
+
+	// Define the size of each grid cell and the number of rows and columns
+	static const int cellSize = 30; // Grid cell size: 30px
+	static const int margin = 5;    // Margin from the edge of the window: 5px
+	static const int marginBetweenCells = 3; // Margin between grid cells: 3px
+	static const int roundRadius = 5; // Radius for rounded corners
 };

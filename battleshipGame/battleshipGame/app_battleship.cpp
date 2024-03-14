@@ -1,6 +1,7 @@
 #include "app_battleship.h"
 #include "draw_statistics.h"
 #include "board.h"
+#include "play_game.h"
 #include "resource.h"
 #include <stdexcept>
 #include <windows.h>
@@ -174,6 +175,32 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		return 0;
 	case WM_LBUTTONDOWN:
 	{
+		POINT clickPoint;
+
+		clickPoint.x = GET_X_LPARAM(lparam);
+		clickPoint.y = GET_Y_LPARAM(lparam);
+
+		if (window == pc_popup)
+			play_game::OnLButtonDown(window, clickPoint, 1);
+		//ReleaseCapture();
+		return 0;
+	}
+	case WM_MOUSEMOVE:
+		if (wparam & MK_LBUTTON)
+		{
+			// Calculate the delta movement of the mouse
+			POINT currentPos;
+			GetCursorPos(&currentPos);
+			ScreenToClient(window, &currentPos);
+			int deltaX = currentPos.x - m_dragStartPos.x;
+			int deltaY = currentPos.y - m_dragStartPos.y;
+			// Move the window accordingly
+			SetWindowPos(window, nullptr, m_dragStartPos.x + deltaX, m_dragStartPos.y + deltaY, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		}
+		return 0;
+	case WM_LBUTTONUP:
+	{
+		/*
 		// Capture mouse input to the window
 		SetCapture(window);
 		// Get the current mouse position
@@ -183,7 +210,7 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		ScreenToClient(window, &cursorPos);
 		// Store the initial mouse position for dragging
 		m_dragStartPos = cursorPos;
-
+		
 		// turning blue
 		const int CELL_SIZE = 30;
 		const int MARGIN = 5;
@@ -210,26 +237,9 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		DeleteObject(hBrush);
 		ReleaseDC(window, hdc);
 
-		break;
+		*/
 		return 0;
 	}
-	case WM_MOUSEMOVE:
-		if (wparam & MK_LBUTTON)
-		{
-			// Calculate the delta movement of the mouse
-			POINT currentPos;
-			GetCursorPos(&currentPos);
-			ScreenToClient(window, &currentPos);
-			int deltaX = currentPos.x - m_dragStartPos.x;
-			int deltaY = currentPos.y - m_dragStartPos.y;
-			// Move the window accordingly
-			SetWindowPos(window, nullptr, m_dragStartPos.x + deltaX, m_dragStartPos.y + deltaY, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-		}
-		return 0;
-	case WM_LBUTTONUP:
-		// Release mouse capture
-		ReleaseCapture();
-		return 0;
 	case WM_TIMER:
 	{
 		++m_elapsedTime;
@@ -321,10 +331,6 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 }
 
 app_battleship::app_battleship(HINSTANCE instance)
-/* : m_instance{instance}, m_main{}, m_popup{},
-m_field_brush{},
-m_screen_size{ GetSystemMetrics(SM_CXSCREEN),
-GetSystemMetrics(SM_CYSCREEN) }*/
 	: m_instance{ instance }, m_main{}, m_popup{ }, pc_popup{ },
 	m_field_brush{},
 	m_screen_size{ GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN) }
