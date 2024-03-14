@@ -224,7 +224,9 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 
 		// Start caption timer
 		m_elapsedTime = 0;
+		if (m_timerID == NULL)
 		m_timerID = SetTimer(window, 1, 1000, nullptr);
+		
 		break;
 	}
 	case WM_PAINT:
