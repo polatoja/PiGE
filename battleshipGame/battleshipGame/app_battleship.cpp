@@ -190,6 +190,11 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 				{
 					pc_board[cellRedraw.x][cellRedraw.y] = temp + 10;
 					temp = pc_board[cellRedraw.x][cellRedraw.y];
+
+					if (temp == 11)
+					{
+						Ship1Tanked(cellRedraw);
+					}
 				}
 			}
 		}
@@ -264,6 +269,8 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 			rnV2 = board::my_random(10000, 100000000);
 			pc_board = board::place_ships(10, rnV2);
 
+			sizeOfBoard = 10;
+
 			AdjustWindowRectEx(&sizeE, gameboard_style, false, 0);
 			SetBoardSize(m_popup, sizeE.right - sizeE.left, sizeE.bottom - sizeE.top);
 			SetBoardSize(pc_popup, sizeE.right - sizeE.left, sizeE.bottom - sizeE.top);
@@ -276,6 +283,8 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 			rnV2 = board::my_random(10000, 100000000);
 			pc_board = board::place_ships(15, rnV2);
 
+			sizeOfBoard = 15;
+
 			AdjustWindowRectEx(&sizeM, gameboard_style, false, 0);
 			SetBoardSize(m_popup, sizeM.right - sizeM.left, sizeM.bottom - sizeM.top);
 			SetBoardSize(pc_popup, sizeM.right - sizeM.left, sizeM.bottom - sizeM.top);
@@ -287,6 +296,8 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 			my_board = board::place_ships(20, rnV1);
 			rnV2 = board::my_random(10000, 100000000);
 			pc_board = board::place_ships(20, rnV2);
+
+			sizeOfBoard = 20;
 
 			AdjustWindowRectEx(&sizeH, gameboard_style, false, 0);
 			SetBoardSize(m_popup, sizeH.right - sizeH.left, sizeH.bottom - sizeH.top);
@@ -546,4 +557,31 @@ std::string app_battleship::LoadDifficultyLevel()
 	char buffer[bufferSize];
 	GetPrivateProfileStringA("Settings", "DifficultyLevel", "", buffer, bufferSize, "settings.ini");
 	return buffer;
+}
+
+void app_battleship::Ship1Tanked(POINT position)
+{
+	// our ship position.x position.y
+
+	int offsets[3] = { -1, 0, 1 };
+
+	// Iterate over neighboring cells
+	for (int xOffset : offsets)
+	{
+		for (int yOffset : offsets)
+		{
+			int neighborX = position.x + xOffset;
+			int neighborY = position.y + yOffset;
+
+			// Check if the neighbor cell is within bounds
+			if (neighborX >= 0 && neighborX < sizeOfBoard && neighborY >= 0 && neighborY < sizeOfBoard)
+			{
+				int temp = pc_board[neighborX][neighborY];
+				if (temp < 10)
+				{
+					pc_board[neighborX][neighborY] = temp + 11;
+				}
+			}
+		}
+	}
 }
