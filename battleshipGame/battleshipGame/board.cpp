@@ -7,7 +7,7 @@ std::vector<std::vector<int>> board::grid;
 int board::my_random(int min, int max) {
     static bool initialized = false;
     if (!initialized) {
-        srand(time(nullptr));
+        srand((unsigned int) time(NULL));
         initialized = true;
     }
     return min + rand() % (max - min + 1);
