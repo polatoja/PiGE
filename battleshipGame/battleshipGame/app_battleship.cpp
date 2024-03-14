@@ -4,6 +4,7 @@
 #include "resource.h"
 #include <stdexcept>
 #include <windows.h>
+#include <Windowsx.h>
 #include <dwmapi.h>
 
 std::wstring const app_battleship::s_class_name{ L"Battleship Window" };
@@ -181,6 +182,34 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		ScreenToClient(window, &cursorPos);
 		// Store the initial mouse position for dragging
 		m_dragStartPos = cursorPos;
+
+		// turning blue
+
+		/*
+		const int CELL_SIZE = 30;
+		const int MARGIN = 5;
+
+		// Extract mouse coordinates from the message parameters
+		int xPos = GET_X_LPARAM(lparam);
+		int yPos = GET_Y_LPARAM(lparam);
+
+		// Calculate the clicked grid cell based on mouse coordinates
+		int col = (xPos - MARGIN) / CELL_SIZE;
+		int row = (yPos - MARGIN) / CELL_SIZE;
+
+		// Determine the position of the top-left corner of the clicked grid cell
+		int cellX = col * CELL_SIZE + MARGIN;
+		int cellY = row * CELL_SIZE + MARGIN;
+
+		HDC hdc = GetDC(window);
+		HBRUSH hBrush = CreateSolidBrush(RGB(0, 0, 255)); // Blue color
+		RECT cellRect = { cellX, cellY, cellX + CELL_SIZE, cellY + CELL_SIZE };
+		FillRect(hdc, &cellRect, hBrush);
+		DeleteObject(hBrush);
+		ReleaseDC(window, hdc);
+		*/
+
+		break;
 		return 0;
 	case WM_MOUSEMOVE:
 		if (wparam & MK_LBUTTON)
