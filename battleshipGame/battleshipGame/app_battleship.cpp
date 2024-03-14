@@ -576,10 +576,13 @@ void app_battleship::Ship1Tanked(POINT position)
 			// Check if the neighbor cell is within bounds
 			if (neighborX >= 0 && neighborX < sizeOfBoard && neighborY >= 0 && neighborY < sizeOfBoard)
 			{
-				int temp = pc_board[neighborX][neighborY];
-				if (temp < 10)
+				if (!(neighborX == 0 && neighborY == 0))
 				{
-					pc_board[neighborX][neighborY] = temp + 11;
+					int temp = pc_board[neighborX][neighborY];
+					if (temp < 10)
+					{
+						pc_board[neighborX][neighborY] = temp + 11;
+					}
 				}
 			}
 		}
