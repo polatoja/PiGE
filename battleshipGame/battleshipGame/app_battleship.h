@@ -54,7 +54,7 @@ private:
 
 	POINT m_dragStartPos;
 
-	UINT_PTR m_timerID; // Timer ID variable
+	UINT_PTR m_timerID = NULL; // Timer ID variable
 	int m_elapsedTime; // Elapsed time variable
 
 public:

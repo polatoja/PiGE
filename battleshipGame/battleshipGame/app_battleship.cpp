@@ -89,8 +89,8 @@ HWND app_battleship::create_board_window(DWORD style, HWND board, DWORD ex_style
 			style, // Window style
 			xPos, // Initial X position
 			yPos, // Initial Y position
-			size.right - size.left, // Width
-			size.bottom - size.top, // Height
+			windowWidth,
+			windowHeight,
 			board, // Parent window
 			nullptr,
 			m_instance,
@@ -107,8 +107,8 @@ HWND app_battleship::create_board_window(DWORD style, HWND board, DWORD ex_style
 			style, // Window style
 			7 * xPos, // Initial X position
 			yPos, // Initial Y position
-			size.right - size.left, // Width
-			size.bottom - size.top, // Height
+			windowWidth,
+			windowHeight,
 			board, // Parent window
 			nullptr,
 			m_instance,
@@ -253,7 +253,9 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 
 		// Start caption timer
 		m_elapsedTime = 0;
+		if (m_timerID == NULL)
 		m_timerID = SetTimer(window, 1, 1000, nullptr);
+		
 		break;
 	}
 	case WM_PAINT:
