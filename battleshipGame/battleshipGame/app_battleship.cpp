@@ -173,6 +173,7 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		on_window_move(window, reinterpret_cast<LPWINDOWPOS>(lparam));
 		return 0;
 	case WM_LBUTTONDOWN:
+	{
 		// Capture mouse input to the window
 		SetCapture(window);
 		// Get the current mouse position
@@ -184,8 +185,6 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		m_dragStartPos = cursorPos;
 
 		// turning blue
-
-		/*
 		const int CELL_SIZE = 30;
 		const int MARGIN = 5;
 
@@ -201,16 +200,19 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		int cellX = col * CELL_SIZE + MARGIN;
 		int cellY = row * CELL_SIZE + MARGIN;
 
+		// Define and initialize the RECT structure for the clicked grid cell
+		RECT cellRect = { cellX, cellY, cellX + CELL_SIZE, cellY + CELL_SIZE };
+
+		// Change the color of the clicked grid cell to blue
 		HDC hdc = GetDC(window);
 		HBRUSH hBrush = CreateSolidBrush(RGB(0, 0, 255)); // Blue color
-		RECT cellRect = { cellX, cellY, cellX + CELL_SIZE, cellY + CELL_SIZE };
 		FillRect(hdc, &cellRect, hBrush);
 		DeleteObject(hBrush);
 		ReleaseDC(window, hdc);
-		*/
 
 		break;
 		return 0;
+	}
 	case WM_MOUSEMOVE:
 		if (wparam & MK_LBUTTON)
 		{
