@@ -55,18 +55,28 @@ private:
 	void Ship2Sunk(POINT position, HWND window);
 	void Ship3Sunk(POINT position, HWND window);
 	void Ship4Sunk(POINT position, HWND window);
-	bool success = false;
+	bool my_success = false;
+	bool pc_success = false;
 
 	void ShowSystemMenu(HWND window);
 	void SaveDifficultyLevel(const std::string& difficulty);
 	std::string LoadDifficultyLevel();
 
 	void PCMove();
+	bool GameFinished();
+	bool WinningGame();
+	bool winner = false;
 
 	POINT m_dragStartPos;
 
 	UINT_PTR m_timerID = NULL; // Timer ID variable
 	int m_elapsedTime; // Elapsed time variable
+
+	static void scanHorizontal_pc_size(int shipSize);
+	static void scanHorizontal_pc();
+	static void scanVertical_pc_size(int shipSize);
+	static void scanVertical_pc();
+	static void scanShipSize1();
 
 public:
 	app_battleship(HINSTANCE instance);
@@ -77,4 +87,8 @@ public:
 	static const int margin = 5;    // Margin from the edge of the window: 5px
 	static const int marginBetweenCells = 3; // Margin between grid cells: 3px
 	static const int roundRadius = 5; // Radius for rounded corners
+
+	static void scanStatistics();
+
+	static int getStatValue(int shipSize, int shipRow, int shipSegment);
 };

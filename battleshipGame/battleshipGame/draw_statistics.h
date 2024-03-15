@@ -6,7 +6,7 @@ class draw_statistics
 
 private:
 	static const int statH = 20; // Grid height for statistics shipsquare
-	static const int statW = 12;  // Grid width for statistics shipsquare
+	static const int statW = 15;  // Grid width for statistics shipsquare
 	static const int statMargin = 0; // Margin between statistics shipsquare
 	static const int shipSizeMargin = 0; // Margin between statistics shipsquare
 	static const int boardMargin = 3; // Margin between statistics shipsquare
@@ -25,6 +25,4 @@ public:
 		; // Total statistics width
 
 	static void Draw(HDC hdc);
-
-	static int counterShip1;
 };

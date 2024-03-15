@@ -77,8 +77,6 @@ HWND app_battleship::create_board_window(DWORD style, HWND board, DWORD ex_style
 	int xPos = (screenWidth - windowWidth) / 8; // Center horizontally
 	int yPos = screenHeight - (screenHeight / 4) - windowHeight; // 1/4 from the bottom
 
-	draw_statistics::counterShip1 = 0;
-
 	HWND hWnd;
 
 	if (whose == 0)
@@ -164,6 +162,7 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		}
 		break;
 	case WM_RBUTTONDOWN:
+	{
 		// Check if the right mouse button is clicked on the taskbar and the main window is focused
 		if ((window == m_main) && (GetForegroundWindow() == window))
 		{
@@ -172,6 +171,7 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 			return 0;
 		}
 		break;
+	}
 	case WM_WINDOWPOSCHANGED:
 		on_window_move(window, reinterpret_cast<LPWINDOWPOS>(lparam));
 		return 0;
@@ -185,10 +185,19 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		{
 			CellRedraw_pc(window, clickPoint);
 		}
-		
-		if (!success)
+		pc_success = true;
+		if (!my_success)
 		{
-			PCMove();
+			while (pc_success)
+			{
+				PCMove();
+			}
+		}
+
+		bool finished = GameFinished();
+		if (finished)
+		{
+			winner = WinningGame();
 		}
 
 		return 0;
@@ -228,6 +237,8 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		PAINTSTRUCT ps;
 		PAINTSTRUCT ps_stat;
 
+		InvalidateRect(m_main, NULL, TRUE);
+
 		HDC hdc_my = BeginPaint(m_popup, &ps);
 		HDC hdc_pc = BeginPaint(pc_popup, &ps);
 		HDC hdc_stat = BeginPaint(m_main, &ps_stat);
@@ -237,6 +248,33 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		DrawGridCells_my(hdc_my);
 		DrawGridCells_pc(hdc_pc);
 		draw_statistics::Draw(hdc_stat);
+
+		if (winner)
+		{
+			HDC hdc = GetDC(pc_popup);
+			if (hdc)
+			{
+				SelectObject(hdc, GetStockObject(DC_BRUSH));
+				SelectObject(hdc, GetStockObject(DC_PEN));
+
+				// Set the background color to green
+				SetBkColor(hdc, RGB(0, 255, 0)); // Green color
+				SetDCBrushColor(hdc, RGB(0, 255, 0));
+				
+				// Set the text color to black
+				SetDCPenColor(hdc, RGB(0, 0, 0));
+
+				// Set the background mode to transparent
+				SetBkMode(hdc, TRANSPARENT);
+
+				RoundRect(hdc, 0, 0, 1000, 1000, 1, 1);
+
+				// Draw "Congratulations" text on the PC window
+				TextOut(hdc, 100, 100, L"Congratulations!", 17);
+				ReleaseDC(pc_popup, hdc);
+			}
+		}
+
 
 		EndPaint(m_popup, &ps);
 		EndPaint(pc_popup, &ps);
@@ -410,7 +448,7 @@ void app_battleship::DrawGridCells_my(HDC hdc)
 			int x = margin + row * (cellSize + marginBetweenCells);
 			int y = margin + col * (cellSize + marginBetweenCells);
 
-			int shipOnPos = pc_board[row][col];
+			int shipOnPos = my_board[row][col];
 
 			if (shipOnPos > 10 && shipOnPos < 20)
 			{
@@ -552,13 +590,13 @@ void app_battleship::DrawGridCells_pc(HDC hdc)
 
 			if (shipOnPos != 10)
 			{
-				/*
+				
 				if (shipOnPos > 0 && shipOnPos < 5)
 				{
 					swprintf(text, 2, L"%d", shipOnPos); // Example: Row-major numbering
 					TextOut(hdc, x + cellSize / 2 - 5, y + cellSize / 2 - 5, text, lstrlen(text));
 				}
-				*/
+				
 				if (shipOnPos > 10 && shipOnPos < 20)
 				{
 					swprintf(text, 2, L"X"); // Example: Row-major numbering
@@ -644,8 +682,6 @@ void app_battleship::Ship1Sunk(POINT position, HWND window)
 			search_and_order(neighborX, neighborY, window);
 		}
 	}
-
-	draw_statistics::counterShip1 += 1;
 }
 
 void app_battleship::Ship2Sunk(POINT position, HWND window)
@@ -718,12 +754,13 @@ void app_battleship::Ship3Sunk(POINT position, HWND window)
 		counter++;
 		positions[counter].x = x + 1;
 		positions[counter].y = y;
-	}
-	if (x + 2 < size && pc_board[x + 2][y] == 13)
-	{
-		counter++;
-		positions[counter].x = x + 2;
-		positions[counter].y = y;
+
+		if (x + 2 < size && pc_board[x + 2][y] == 13)
+		{
+			counter++;
+			positions[counter].x = x + 2;
+			positions[counter].y = y;
+		}
 	}
 
 	if (x - 1 >= 0 && pc_board[x - 1][y] == 13)
@@ -731,12 +768,13 @@ void app_battleship::Ship3Sunk(POINT position, HWND window)
 		counter++;
 		positions[counter].x = x - 1;
 		positions[counter].y = y;
-	}
-	if (x - 2 >= 0 && pc_board[x - 2][y] == 13)
-	{
-		counter++;
-		positions[counter].x = x - 2;
-		positions[counter].y = y;
+
+		if (x - 2 >= 0 && pc_board[x - 2][y] == 13)
+		{
+			counter++;
+			positions[counter].x = x - 2;
+			positions[counter].y = y;
+		}
 	}
 
 	if (y + 1 < size && pc_board[x][y + 1] == 13)
@@ -744,12 +782,13 @@ void app_battleship::Ship3Sunk(POINT position, HWND window)
 		counter++;
 		positions[counter].x = x;
 		positions[counter].y = y + 1;
-	}
-	if (y + 2 < size && pc_board[x][y + 2] == 13)
-	{
-		counter++;
-		positions[counter].x = x;
-		positions[counter].y = y + 2;
+		
+		if (y + 2 < size && pc_board[x][y + 2] == 13)
+		{
+			counter++;
+			positions[counter].x = x;
+			positions[counter].y = y + 2;
+		}
 	}
 
 	if (y - 1 >= 0 && pc_board[x][y - 1] == 13)
@@ -757,12 +796,13 @@ void app_battleship::Ship3Sunk(POINT position, HWND window)
 		counter++;
 		positions[counter].x = x;
 		positions[counter].y = y - 1;
-	}
-	if (y - 2 >= 0 && pc_board[x][y - 2] == 13)
-	{
-		counter++;
-		positions[counter].x = x;
-		positions[counter].y = y - 2;
+
+		if (y - 2 >= 0 && pc_board[x][y - 2] == 13)
+		{
+			counter++;
+			positions[counter].x = x;
+			positions[counter].y = y - 2;
+		}
 	}
 
 	if (counter == 2)
@@ -862,22 +902,27 @@ void app_battleship::PCMove()
 
 	my_board[cellRedraw.x][cellRedraw.y] = temp + 10;
 	temp = my_board[cellRedraw.x][cellRedraw.y];
+	pc_success = false;
 
 	if (temp == 11)
 	{
 		Ship1Sunk(cellRedraw, m_popup);
+		pc_success = true;
 	}
 	if (temp == 12)
 	{
 		Ship2Sunk(cellRedraw, m_popup);
+		pc_success = true;
 	}
 	if (temp == 13)
 	{
 		Ship3Sunk(cellRedraw, m_popup);
+		pc_success = true;
 	}
 	if (temp == 14)
 	{
 		Ship4Sunk(cellRedraw, m_popup);
+		pc_success = true;
 	}
 	
 }
@@ -885,6 +930,13 @@ void app_battleship::PCMove()
 void app_battleship::CellRedraw_pc(HWND window, POINT clickPoint)
 {
 	POINT cellRedraw = play_game::OnLButtonDown(window, clickPoint, 1);
+	my_success = false;
+
+	if (cellRedraw.x == -7)
+	{
+		my_success = true;
+	}
+
 	if (cellRedraw.x != -7)
 	{
 		int temp = pc_board[cellRedraw.x][cellRedraw.y];
@@ -896,23 +948,247 @@ void app_battleship::CellRedraw_pc(HWND window, POINT clickPoint)
 			if (temp == 11)
 			{
 				Ship1Sunk(cellRedraw, pc_popup);
-				success = true;
+				my_success = true;
 			}
 			if (temp == 12)
 			{
 				Ship2Sunk(cellRedraw, pc_popup);
-				success = true;
+				my_success = true;
 			}
 			if (temp == 13)
 			{
 				Ship3Sunk(cellRedraw, pc_popup);
-				success = true;
+				my_success = true;
 			}
 			if (temp == 14)
 			{
 				Ship4Sunk(cellRedraw, pc_popup);
-				success = true;
+				my_success = true;
 			}
 		}
 	}
+}
+
+bool app_battleship::GameFinished()
+{
+	bool finished = false;
+	int my_left = 0, pc_left = 0;
+	int size = my_board.size();
+
+	for (int i = 0; i < size; i++)
+	{
+		for (int j = 0; j < size; j++)
+		{
+			int my_temp = my_board[i][j];
+			int pc_temp = pc_board[i][j];
+
+			if (my_temp < 5)
+			{
+				pc_left++;
+			}
+			if (pc_temp < 5)
+			{
+				my_left++;
+			}
+		}
+	}
+
+	if (my_left == 0 || pc_left == 0)
+		finished = true;
+
+	return finished;
+}
+
+bool app_battleship::WinningGame()
+{
+	bool won = false;
+	int my_left = 0, pc_left = 0;
+	int size = my_board.size();
+
+	for (int i = 0; i < size; i++)
+	{
+		for (int j = 0; j < size; j++)
+		{
+			int my_temp = my_board[i][j];
+			int pc_temp = pc_board[i][j];
+
+			if (my_temp < 5)
+			{
+				pc_left++;
+			}
+			if (pc_temp < 5)
+			{
+				my_left++;
+			}
+		}
+	}
+
+	if (my_left == 0 && pc_left > 0)
+		won = true;
+
+	return won;
+}
+
+static std::vector<std::vector<std::vector<int>>> statisticStatus;
+
+void app_battleship::scanShipSize1()
+{
+	int shipNumber = 0;
+
+	for (int x = 0; x < pc_board.size(); x++)
+	{
+		for (int y = 0; y < pc_board.size(); y++)
+		{
+			int cellValue = pc_board[x][y];
+			int fire = -1;
+
+			if (pc_board[x][y] == 11)
+			{
+				fire = 1;
+				statisticStatus[1][shipNumber][0] = 1;
+				shipNumber++;
+			}
+
+		}
+	}
+
+}
+
+void app_battleship::scanVertical_pc_size(int shipSize)
+{
+	int shipNumber = -1;
+	int shipSegment = -1;
+	int newFire = -1;
+
+	for (int x = 0; x < pc_board.size(); x++)
+	{
+		shipSegment = 0;
+		newFire = 1;
+
+		for (int y = 0; y < pc_board.size(); y++)
+		{
+			int cellValue = pc_board[x][y];
+			int fire = -1;
+
+			if (
+				(pc_board[x][y] == (10 + shipSize)) &&
+				(
+					(y + 1 < pc_board.size()) &&
+					((pc_board[x][y + 1] == (10 + shipSize)) || (pc_board[x][y + 1] == (shipSize)))
+					||
+					(y - 1 > 0) &&
+					((pc_board[x][y - 1] == (10 + shipSize)) || (pc_board[x][y - 1] == (shipSize)))
+					)
+				)
+				fire = 1;
+			else
+				fire = 0;
+
+
+			if (fire == 1)
+			{
+				if (newFire == 1)
+				{
+					newFire = 0;
+					shipNumber++;
+				}
+
+				statisticStatus[shipSize][shipNumber][shipSegment] = fire;
+				shipSegment++;
+			}
+			else
+			{
+				newFire = 1;
+			}
+
+		}
+	}
+
+}
+
+void app_battleship::scanVertical_pc()
+{
+
+	scanVertical_pc_size(4);
+	scanVertical_pc_size(3);
+	scanVertical_pc_size(2);
+}
+
+void app_battleship::scanHorizontal_pc_size(int shipSize)
+{
+	int shipNumber = -1;
+	int shipSegment = -1;
+	int newFire = -1;
+
+	// 
+	for (int y = 0; y < pc_board.size(); y++)
+	{
+		shipSegment = 0;
+		newFire = 1;
+
+		for (int x = 0; x < pc_board.size(); x++)
+		{
+			int cellValue = pc_board[x][y];
+			int fire = -1;
+
+			if (
+				(pc_board[x][y] == (10 + shipSize)) &&
+				(
+					(x + 1 < pc_board.size()) &&
+					((pc_board[x + 1][y] == (10 + shipSize)) || (pc_board[x + 1][y] == (shipSize)))
+					||
+					(x - 1 > 0) &&
+					((pc_board[x - 1][y] == (10 + shipSize)) || (pc_board[x - 1][y] == (shipSize)))
+					)
+				)
+				fire = 1;
+			else
+				fire = 0;
+
+
+			if (fire == 1)
+			{
+				if (newFire == 1)
+				{
+					newFire = 0;
+					shipNumber++;
+
+					while (statisticStatus[shipSize][shipNumber][shipSegment] == 1)
+						shipNumber++; //Burning vertical
+				}
+
+				statisticStatus[shipSize][shipNumber][shipSegment] = fire;
+				shipSegment++;
+			}
+			else
+			{
+				newFire = 1;
+			}
+
+		}
+	}
+
+}
+
+void app_battleship::scanHorizontal_pc()
+{
+
+	scanHorizontal_pc_size(4);
+	scanHorizontal_pc_size(3);
+	scanHorizontal_pc_size(2);
+}
+
+void app_battleship::scanStatistics()
+{
+	statisticStatus = std::vector<std::vector<std::vector<int>>>
+		(5, std::vector<std::vector<int>>(5, std::vector<int>(5, 0)));
+
+	scanVertical_pc();
+	scanHorizontal_pc();
+	scanShipSize1();
+}
+
+int app_battleship::getStatValue(int shipSize, int shipRow, int shipSegment)
+{
+	return statisticStatus[shipSize][shipRow][shipSegment];
 }
