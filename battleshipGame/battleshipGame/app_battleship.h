@@ -48,13 +48,20 @@ private:
 
 	void DrawGridCells_my(HDC hdc);
 	void DrawGridCells_pc(HDC hdc);
+	void CellRedraw_pc(HWND window, POINT clickPoint);
 
-	void Ship1Sunk(POINT position);
-	void Ship2Sunk(POINT position);
+	void search_and_order(int x, int y, HWND window);
+	void Ship1Sunk(POINT position, HWND window);
+	void Ship2Sunk(POINT position, HWND window);
+	void Ship3Sunk(POINT position, HWND window);
+	void Ship4Sunk(POINT position, HWND window);
+	bool success = false;
 
 	void ShowSystemMenu(HWND window);
 	void SaveDifficultyLevel(const std::string& difficulty);
 	std::string LoadDifficultyLevel();
+
+	void PCMove();
 
 	POINT m_dragStartPos;
 

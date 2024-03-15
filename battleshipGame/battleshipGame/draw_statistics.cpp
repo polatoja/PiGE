@@ -2,12 +2,33 @@
 
 void draw_statistics::DrawShipSize(HDC hdc, int xoffset, int yoffset, int shipSize, int playerID)
 {
+	/*
+	int temp;
+	if (shipSize == 1)
+	{
+		temp = counterShip1;
+	}
+	*/
 	for (int row = 0; row + shipSize < 5; row++)
 	{
+		/*
+		if (temp > 0)
+		{
+			RECT redrawField;
+
+			redrawField.left = app_battleship::margin + board_x * cellSpacing - 1;
+			redrawField.right = redrawField.left + app_battleship::cellSize + 1;
+			redrawField.top = app_battleship::margin + board_y * cellSpacing - 1;
+			redrawField.bottom = redrawField.top + app_battleship::cellSize + 1;
+
+			InvalidateRect(hWindow, &redrawField, FALSE);
+		}
+		*/
 		for (int i = 0; i < shipSize; i++)
 		{
 			// Choose infosquare color based on: playerID, shipSize, row, i=vertical position in a ship
 			// TODO
+
 			SelectObject(hdc, GetStockObject(DC_BRUSH));
 			SelectObject(hdc, GetStockObject(DC_PEN));
 			// niebieski (113,184,255)

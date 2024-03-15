@@ -77,6 +77,8 @@ HWND app_battleship::create_board_window(DWORD style, HWND board, DWORD ex_style
 	int xPos = (screenWidth - windowWidth) / 8; // Center horizontally
 	int yPos = screenHeight - (screenHeight / 4) - windowHeight; // 1/4 from the bottom
 
+	draw_statistics::counterShip1 = 0;
+
 	HWND hWnd;
 
 	if (whose == 0)
@@ -179,24 +181,14 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 
 		clickPoint.x = GET_X_LPARAM(lparam);
 		clickPoint.y = GET_Y_LPARAM(lparam);
-
 		if (window == pc_popup)
 		{
-			cellRedraw = play_game::OnLButtonDown(window, clickPoint, 1);
-			if (cellRedraw.x != -7)
-			{
-				int temp = pc_board[cellRedraw.x][cellRedraw.y];
-				if (temp < 11)
-				{
-					pc_board[cellRedraw.x][cellRedraw.y] = temp + 10;
-					temp = pc_board[cellRedraw.x][cellRedraw.y];
-
-					if (temp == 11)
-					{
-						Ship1Sunk(cellRedraw);
-					}
-				}
-			}
+			CellRedraw_pc(window, clickPoint);
+		}
+		
+		if (!success)
+		{
+			PCMove();
 		}
 
 		return 0;
@@ -418,16 +410,69 @@ void app_battleship::DrawGridCells_my(HDC hdc)
 			int x = margin + row * (cellSize + marginBetweenCells);
 			int y = margin + col * (cellSize + marginBetweenCells);
 
+			int shipOnPos = pc_board[row][col];
+
+			if (shipOnPos > 10 && shipOnPos < 20)
+			{
+				SelectObject(hdc, GetStockObject(DC_BRUSH));
+				SelectObject(hdc, GetStockObject(DC_PEN));
+
+				SetDCBrushColor(hdc, RGB(255, 0, 0));
+				SetBkColor(hdc, RGB(255, 0, 0));
+				SetDCPenColor(hdc, RGB(0, 0, 0));
+			}
+			else if (shipOnPos == 20)
+			{
+				SelectObject(hdc, GetStockObject(DC_BRUSH));
+				SelectObject(hdc, GetStockObject(DC_PEN));
+
+				SetDCBrushColor(hdc, RGB(113, 184, 255));
+				SetBkColor(hdc, RGB(113, 184, 255));
+				SetDCPenColor(hdc, RGB(0, 0, 0));
+			}
+			else if (shipOnPos == 21)
+			{
+				SelectObject(hdc, GetStockObject(DC_BRUSH));
+				SelectObject(hdc, GetStockObject(DC_PEN));
+
+				SetDCBrushColor(hdc, RGB(247, 213, 116));
+				SetBkColor(hdc, RGB(247, 213, 116));
+				SetDCPenColor(hdc, RGB(0, 0, 0));
+			}
+			else
+			{
+				SelectObject(hdc, GetStockObject(DC_BRUSH));
+				SelectObject(hdc, GetStockObject(DC_PEN));
+
+				SetDCBrushColor(hdc, RGB(255, 255, 255));
+				SetBkColor(hdc, RGB(255, 255, 255));
+				SetDCPenColor(hdc, RGB(0, 0, 0));
+			}
+
 			// Draw the background of the cell (rounded rectangle)
 			RoundRect(hdc, x, y, x + cellSize, y + cellSize, roundRadius, roundRadius);
 
 			// Draw content in the cell (e.g., numbers)
 			WCHAR text[2];
-			int shipOnPos = my_board[row][col];
 			if (shipOnPos != 10)
 			{
-				swprintf(text, 2, L"%d", shipOnPos); // Example: Row-major numbering
-				TextOut(hdc, x + cellSize / 2 - 5, y + cellSize / 2 - 5, text, lstrlen(text));
+				
+				if (shipOnPos > 0 && shipOnPos < 5)
+				{
+					swprintf(text, 2, L"%d", shipOnPos); // Example: Row-major numbering
+					TextOut(hdc, x + cellSize / 2 - 5, y + cellSize / 2 - 5, text, lstrlen(text));
+				}
+				
+				if (shipOnPos > 10 && shipOnPos < 20)
+				{
+					swprintf(text, 2, L"X"); // Example: Row-major numbering
+					TextOut(hdc, x + cellSize / 2 - 5, y + cellSize / 2 - 5, text, lstrlen(text));
+				}
+				if (shipOnPos == 20)
+				{
+					swprintf(text, 2, L".");
+					TextOut(hdc, x + cellSize / 2 - 5, y + cellSize / 2 - 5, text, lstrlen(text));
+				}
 			}
 		}
 	}
@@ -507,11 +552,13 @@ void app_battleship::DrawGridCells_pc(HDC hdc)
 
 			if (shipOnPos != 10)
 			{
+				/*
 				if (shipOnPos > 0 && shipOnPos < 5)
 				{
 					swprintf(text, 2, L"%d", shipOnPos); // Example: Row-major numbering
 					TextOut(hdc, x + cellSize / 2 - 5, y + cellSize / 2 - 5, text, lstrlen(text));
 				}
+				*/
 				if (shipOnPos > 10 && shipOnPos < 20)
 				{
 					swprintf(text, 2, L"X"); // Example: Row-major numbering
@@ -558,7 +605,29 @@ std::string app_battleship::LoadDifficultyLevel()
 	return buffer;
 }
 
-void app_battleship::Ship1Sunk(POINT position)
+void app_battleship::search_and_order(int neighborX, int neighborY, HWND window)
+{
+	if (neighborX >= 0 && neighborX < pc_board.size() && neighborY >= 0 && neighborY < pc_board.size())
+	{
+		int temp = pc_board[neighborX][neighborY];
+		if (temp == 10)
+		{
+			pc_board[neighborX][neighborY] = temp + 11;
+
+			RECT redrawField;
+			int cellSpacing = app_battleship::cellSize + app_battleship::marginBetweenCells;
+
+			redrawField.left = app_battleship::margin + neighborX * cellSpacing - 1;
+			redrawField.right = redrawField.left + app_battleship::cellSize + 1;
+			redrawField.top = app_battleship::margin + neighborY * cellSpacing - 1;
+			redrawField.bottom = redrawField.top + app_battleship::cellSize + 1;
+
+			InvalidateRect(window, &redrawField, FALSE);
+		}
+	}
+}
+
+void app_battleship::Ship1Sunk(POINT position, HWND window)
 {
 	// our ship position.x position.y
 	int offsets[3] = { -1, 0, 1 };
@@ -572,50 +641,277 @@ void app_battleship::Ship1Sunk(POINT position)
 			int neighborY = position.y + yOffset;
 
 			// Check if the neighbor cell is within bounds
+			search_and_order(neighborX, neighborY, window);
+		}
+	}
+
+	draw_statistics::counterShip1 += 1;
+}
+
+void app_battleship::Ship2Sunk(POINT position, HWND window)
+{
+	bool isSunk = false;
+
+	// our ship position.x position.y
+	int offsets[3] = { -1, 0, 1 };
+	POINT position2;
+
+	// Iterate over neighboring cells
+	for (int xOffset : offsets)
+	{
+		for (int yOffset : offsets)
+		{
+			int neighborX = position.x + xOffset;
+			int neighborY = position.y + yOffset;
+
+			// Check if the neighbor cell is within bounds
 			if (neighborX >= 0 && neighborX < pc_board.size() && neighborY >= 0 && neighborY < pc_board.size())
 			{
-				int temp = pc_board[neighborX][neighborY];
-				if (temp == 10)
+				if (!(xOffset == 0 && yOffset == 0))
 				{
-					pc_board[neighborX][neighborY] = temp + 11;
-					
-					RECT redrawField;
-					int cellSpacing = app_battleship::cellSize + app_battleship::marginBetweenCells;
+					int temp = pc_board[neighborX][neighborY];
+					if (temp == 12)
+					{
+						isSunk = true;
+						position2.x = neighborX;
+						position2.y = neighborY;
+					}
+				}
+			}
+		}
+	}
 
-					redrawField.left = app_battleship::margin + neighborX * cellSpacing - 1;
-					redrawField.right = redrawField.left + app_battleship::cellSize + 1;
-					redrawField.top = app_battleship::margin + neighborY * cellSpacing - 1;
-					redrawField.bottom = redrawField.top + app_battleship::cellSize + 1;
+	if (isSunk == true)
+	{
+		for (int xOffset : offsets)
+		{
+			for (int yOffset : offsets)
+			{
+				int neighborX = position.x + xOffset;
+				int neighborY = position.y + yOffset;
 
-					InvalidateRect(pc_popup, &redrawField, FALSE);
+				int neighbor2X = position2.x + xOffset;
+				int neighbor2Y = position2.y + yOffset;
+
+				// Check if the neighbor cell is within bounds
+				search_and_order(neighborX, neighborY, window);
+				search_and_order(neighbor2X, neighbor2Y, window);
+			}
+		}
+	}
+}
+
+void app_battleship::Ship3Sunk(POINT position, HWND window)
+{
+	int counter = 0;
+	int offsets[3] = { -1, 0, 1 };
+	// our ship position.x position.y
+	POINT positions[3];
+	positions[0] = position;
+	
+	int x = position.x;
+	int y = position.y;
+	int size = pc_board.size();
+
+	if (x + 1 < size && pc_board[x + 1][y] == 13)
+	{
+		counter++;
+		positions[counter].x = x + 1;
+		positions[counter].y = y;
+	}
+	if (x + 2 < size && pc_board[x + 2][y] == 13)
+	{
+		counter++;
+		positions[counter].x = x + 2;
+		positions[counter].y = y;
+	}
+
+	if (x - 1 >= 0 && pc_board[x - 1][y] == 13)
+	{
+		counter++;
+		positions[counter].x = x - 1;
+		positions[counter].y = y;
+	}
+	if (x - 2 >= 0 && pc_board[x - 2][y] == 13)
+	{
+		counter++;
+		positions[counter].x = x - 2;
+		positions[counter].y = y;
+	}
+
+	if (y + 1 < size && pc_board[x][y + 1] == 13)
+	{
+		counter++;
+		positions[counter].x = x;
+		positions[counter].y = y + 1;
+	}
+	if (y + 2 < size && pc_board[x][y + 2] == 13)
+	{
+		counter++;
+		positions[counter].x = x;
+		positions[counter].y = y + 2;
+	}
+
+	if (y - 1 >= 0 && pc_board[x][y - 1] == 13)
+	{
+		counter++;
+		positions[counter].x = x;
+		positions[counter].y = y - 1;
+	}
+	if (y - 2 >= 0 && pc_board[x][y - 2] == 13)
+	{
+		counter++;
+		positions[counter].x = x;
+		positions[counter].y = y - 2;
+	}
+
+	if (counter == 2)
+	{
+		for (int xOffset : offsets)
+		{
+			for (int yOffset : offsets)
+			{
+				for (int i = 0; i < 3; i++)
+				{
+					int neighborX = positions[i].x + xOffset;
+					int neighborY = positions[i].y + yOffset;
+					search_and_order(neighborX, neighborY, window);
 				}
 			}
 		}
 	}
 }
 
-void app_battleship::Ship2Sunk(POINT position)
+void app_battleship::Ship4Sunk(POINT position, HWND window)
 {
 	bool isSunk = false;
-	// our ship position.x position.y
+	
 	int offsets[3] = { -1, 0, 1 };
+	POINT positions[4];
+
+	int size = pc_board.size();
+	int counter = 0;
 
 	// Iterate over neighboring cells
-	for (int xOffset : offsets)
+	for (int i = 0; i < size; i++)
 	{
-		for (int yOffset : offsets)
+		for (int j = 0; j < size; j++)
 		{
-			int neighborX = position.x + xOffset;
-			int neighborY = position.y + yOffset;
-
-			// Check if the neighbor cell is within bounds
-			if (neighborX >= 0 && neighborX < pc_board.size() && neighborY >= 0 && neighborY < pc_board.size())
+			int temp = pc_board[i][j];
+			if (temp == 14)
 			{
-				int temp = pc_board[neighborX][neighborY];
-				if (temp == 10)
+				positions[counter].x = i;
+				positions[counter].y = j;
+				counter++;
+			}
+			if (counter == 4)
+			{
+				isSunk = true;
+				break;
+			}
+		}
+	}
+
+	if (isSunk == true)
+	{
+		for (int xOffset : offsets)
+		{
+			for (int yOffset : offsets)
+			{
+				for (int i = 0; i < 4; i++)
 				{
-					pc_board[neighborX][neighborY] = temp + 11;
+					int neighborX = positions[i].x + xOffset;
+					int neighborY = positions[i].y + yOffset;
+					search_and_order(neighborX, neighborY, window);
 				}
+			}
+		}
+	}
+}
+
+void app_battleship::PCMove()
+{
+	int size = my_board.size();
+	POINT cellRedraw;
+	bool goodChoice = false;
+	int temp;
+
+	while (goodChoice != true)
+	{
+		int rnVx = board::my_random(10, 1000);
+		int rnVy = board::my_random(1000, 100000);
+
+		cellRedraw.x = rnVx % size;
+		cellRedraw.y = rnVy % size;
+		temp = my_board[cellRedraw.x][cellRedraw.y];
+		if (temp < 11)
+		{
+			goodChoice = true;
+		}
+	}
+
+	int cellSpacing = app_battleship::cellSize + app_battleship::marginBetweenCells;
+	RECT redrawField;
+
+	redrawField.left = app_battleship::margin + cellRedraw.x * cellSpacing - 1;
+	redrawField.right = redrawField.left + app_battleship::cellSize + 1;
+	redrawField.top = app_battleship::margin + cellRedraw.y * cellSpacing - 1;
+	redrawField.bottom = redrawField.top + app_battleship::cellSize + 1;
+
+	InvalidateRect(m_popup, &redrawField, FALSE);
+
+	my_board[cellRedraw.x][cellRedraw.y] = temp + 10;
+	temp = my_board[cellRedraw.x][cellRedraw.y];
+
+	if (temp == 11)
+	{
+		Ship1Sunk(cellRedraw, m_popup);
+	}
+	if (temp == 12)
+	{
+		Ship2Sunk(cellRedraw, m_popup);
+	}
+	if (temp == 13)
+	{
+		Ship3Sunk(cellRedraw, m_popup);
+	}
+	if (temp == 14)
+	{
+		Ship4Sunk(cellRedraw, m_popup);
+	}
+	
+}
+
+void app_battleship::CellRedraw_pc(HWND window, POINT clickPoint)
+{
+	POINT cellRedraw = play_game::OnLButtonDown(window, clickPoint, 1);
+	if (cellRedraw.x != -7)
+	{
+		int temp = pc_board[cellRedraw.x][cellRedraw.y];
+		if (temp < 11)
+		{
+			pc_board[cellRedraw.x][cellRedraw.y] = temp + 10;
+			temp = pc_board[cellRedraw.x][cellRedraw.y];
+
+			if (temp == 11)
+			{
+				Ship1Sunk(cellRedraw, pc_popup);
+				success = true;
+			}
+			if (temp == 12)
+			{
+				Ship2Sunk(cellRedraw, pc_popup);
+				success = true;
+			}
+			if (temp == 13)
+			{
+				Ship3Sunk(cellRedraw, pc_popup);
+				success = true;
+			}
+			if (temp == 14)
+			{
+				Ship4Sunk(cellRedraw, pc_popup);
+				success = true;
 			}
 		}
 	}

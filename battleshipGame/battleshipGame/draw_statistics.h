@@ -25,4 +25,6 @@ public:
 		; // Total statistics width
 
 	static void Draw(HDC hdc);
+
+	static int counterShip1;
 };
