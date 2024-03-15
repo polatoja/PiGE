@@ -28,7 +28,6 @@ bool app_battleship::register_class()
 	.hIcon = static_cast<HICON>(LoadImageW(m_instance, MAKEINTRESOURCEW(101), IMAGE_ICON, 0, 0, LR_SHARED | LR_DEFAULTSIZE)),
 	.hCursor = LoadCursorW(nullptr, L"IDC_ARROW"),
 	.hbrBackground = CreateSolidBrush(RGB(164,174,196)),
-	//.hbrBackground = CreateSolidBrush(RGB(164,64,64)),
 	.lpszClassName = s_class_name.c_str()
 	};
 	return RegisterClassExW(&desc) != 0;
@@ -37,45 +36,47 @@ bool app_battleship::register_class()
 HWND app_battleship::create_window(DWORD style, HWND parent, DWORD ex_style)
 {
 	RECT size{ 0, 0, draw_statistics::statWtotal, draw_statistics::statHtotal };
-	AdjustWindowRectEx(&size, style, false, 0); // Adjust the window size based on the style
+	AdjustWindowRectEx(&size, style, false, 0);
 
-	// Calculate the position of the main window
 	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
 	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
 	int windowWidth = size.right - size.left;
 	int windowHeight = size.bottom - size.top;
 
-	int xPos = (screenWidth - windowWidth) / 2; // Center horizontally
-	int yPos = screenHeight - (screenHeight / 4) - windowHeight; // 1/4 from the bottom
+	int xPos = (screenWidth - windowWidth) / 2;
+	int yPos = screenHeight - (screenHeight / 4) - windowHeight; 
 
-	return CreateWindowExW(
-		ex_style,
-		s_class_name.c_str(), // Class name
-		L"BATTLESHIPS - STATISTICS", // Title
-		style, // Window style
-		xPos, // Initial X position
-		yPos, // Initial Y position
-		size.right - size.left, // Width
-		size.bottom - size.top, // Height
-		parent, // Parent window
+	HWND window = CreateWindowExW(
+		ex_style | WS_EX_LAYERED,
+		s_class_name.c_str(),
+		L"BATTLESHIPS - STATISTICS",
+		style, 
+		xPos,
+		yPos,
+		size.right - size.left, 
+		size.bottom - size.top, 
+		parent,
 		nullptr,
 		m_instance,
 		this);
+
+	SetLayeredWindowAttributes(window, 0, (255 * 30) / 100, LWA_ALPHA);
+	
+	return window;
 }
 
 HWND app_battleship::create_board_window(DWORD style, HWND board, DWORD ex_style, int whose)
 {
-	RECT size{ 0, 0, 337, 337 }; // Initial size of the window
-	AdjustWindowRectEx(&size, style, false, 0); // Adjust the window size based on the style
+	RECT size{ 0, 0, 337, 337 };
+	AdjustWindowRectEx(&size, style, false, 0);
 
-	// Calculate the position of the board window
 	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
 	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
 	int windowWidth = size.right - size.left;
 	int windowHeight = size.bottom - size.top;
 
-	int xPos = (screenWidth - windowWidth) / 8; // Center horizontally
-	int yPos = screenHeight - (screenHeight / 4) - windowHeight; // 1/4 from the bottom
+	int xPos = (screenWidth - windowWidth) / 8;
+	int yPos = screenHeight - (screenHeight / 4) - windowHeight;
 
 	HWND hWnd;
 
@@ -85,14 +86,14 @@ HWND app_battleship::create_board_window(DWORD style, HWND board, DWORD ex_style
 		my_board = board::place_ships(10, rnV1);
 		hWnd = CreateWindowExW(
 			ex_style,
-			s_class_name.c_str(), // Class name
-			L"BATTLESHIPS - MY", // Title
-			style, // Window style
-			xPos, // Initial X position
-			yPos, // Initial Y position
+			s_class_name.c_str(),
+			L"BATTLESHIPS - MY",
+			style,
+			xPos,
+			yPos,
 			windowWidth,
 			windowHeight,
-			board, // Parent window
+			board,
 			nullptr,
 			m_instance,
 			this);
@@ -103,14 +104,14 @@ HWND app_battleship::create_board_window(DWORD style, HWND board, DWORD ex_style
 		pc_board = board::place_ships(10, rnV2);
 		hWnd = CreateWindowExW(
 			ex_style,
-			s_class_name.c_str(), // Class name
-			L"BATTLESHIPS - PC", // Title
-			style, // Window style
-			7 * xPos, // Initial X position
-			yPos, // Initial Y position
+			s_class_name.c_str(),
+			L"BATTLESHIPS - PC",
+			style,
+			7 * xPos, 
+			yPos, 
 			windowWidth,
 			windowHeight,
-			board, // Parent window
+			board,
 			nullptr,
 			m_instance,
 			this);
@@ -147,26 +148,24 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 	case WM_CTLCOLORSTATIC:
 		return reinterpret_cast<INT_PTR>(m_field_brush);
 	case WM_SYSKEYDOWN:
-		// Check if Alt + F4 is pressed and the main window is focused
+		// Alt + F4
 		if ((wparam == VK_F4) && (lparam & (1 << 29)) && (window == m_main))
 		{
-			// Close the application
 			DestroyWindow(window);
 			return 0;
 		}
+		// Alt + space
 		if ((wparam == VK_SPACE) && (lparam & (1 << 29)) && (window == m_main))
 		{
-			// Show system menu
 			ShowSystemMenu(window);
 			return 0;
 		}
 		break;
 	case WM_RBUTTONDOWN:
 	{
-		// Check if the right mouse button is clicked on the taskbar and the main window is focused
+		// right mouse button
 		if ((window == m_main) && (GetForegroundWindow() == window))
 		{
-			// Show system menu
 			ShowSystemMenu(window);
 			return 0;
 		}
@@ -177,30 +176,33 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		return 0;
 	case WM_LBUTTONDOWN:
 	{
-		POINT clickPoint, cellRedraw;
+		if (!winner)
+		{
+			POINT clickPoint, cellRedraw;
 
-		clickPoint.x = GET_X_LPARAM(lparam);
-		clickPoint.y = GET_Y_LPARAM(lparam);
-		if (window == pc_popup)
-		{
-			CellRedraw_pc(window, clickPoint);
-		}
-		pc_success = true;
-		if (!my_success)
-		{
-			while (pc_success)
+			clickPoint.x = GET_X_LPARAM(lparam);
+			clickPoint.y = GET_Y_LPARAM(lparam);
+			if (window == pc_popup)
 			{
-				PCMove();
+				CellRedraw_pc(window, clickPoint);
 			}
-		}
+			pc_success = true;
+			if (!my_success && my_valid_move)
+			{
+				while (pc_success)
+				{
+					PCMove();
+				}
+			}
 
-		bool finished = GameFinished();
-		if (finished)
-		{
-			winner = WinningGame();
-		}
+			bool finished = GameFinished();
+			if (finished)
+			{
+				winner = WinningGame();
+			}
 
-		return 0;
+			return 0;
+		}
 	}
 	case WM_TIMER:
 	{
@@ -212,7 +214,6 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 	}
 	case WM_CREATE:
 	{
-		// Add menu
 		HMENU hMenu = CreateMenu();
 		HMENU hSubMenu = CreatePopupMenu();
 		AppendMenuW(hSubMenu, MF_STRING, ID_GRID_EASY, L"Easy (10x10)");
@@ -221,11 +222,9 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		AppendMenuW(hMenu, MF_POPUP, (UINT_PTR)hSubMenu, L"Grid Size");
 		SetMenu(m_main, hMenu);
 
-		// Set window icon
 		HICON hIcon = LoadIcon(m_instance, MAKEINTRESOURCE(103));
 		SendMessage(window, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
 
-		// Start caption timer
 		m_elapsedTime = 0;
 		if (m_timerID == NULL)
 			m_timerID = SetTimer(window, 1, 1000, nullptr);
@@ -243,38 +242,118 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		HDC hdc_pc = BeginPaint(pc_popup, &ps);
 		HDC hdc_stat = BeginPaint(m_main, &ps_stat);
 
-
-		// Draw grid cells with content
 		DrawGridCells_my(hdc_my);
 		DrawGridCells_pc(hdc_pc);
 		draw_statistics::Draw(hdc_stat);
 
-		if (winner)
+		if (GameFinished())
 		{
-			HDC hdc = GetDC(pc_popup);
-			if (hdc)
+			if (winner)
 			{
-				SelectObject(hdc, GetStockObject(DC_BRUSH));
-				SelectObject(hdc, GetStockObject(DC_PEN));
+				HDC hdc_popup = GetDC(pc_popup);
+				HDC greenbitmap = CreateCompatibleDC(hdc_popup);
 
-				// Set the background color to green
-				SetBkColor(hdc, RGB(0, 255, 0)); // Green color
-				SetDCBrushColor(hdc, RGB(0, 255, 0));
+				HBITMAP hBitmap = CreateCompatibleBitmap(hdc_popup, 500, 500);
+				HBITMAP hOldBitmap = (HBITMAP)SelectObject(greenbitmap, hBitmap);
+
+				SelectObject(greenbitmap, GetStockObject(DC_BRUSH));
+				SelectObject(greenbitmap, GetStockObject(DC_PEN));
+				SetBkColor(greenbitmap, RGB(0, 255, 0)); // Green color
+				SetDCBrushColor(greenbitmap, RGB(0, 255, 0));
+				SetDCPenColor(greenbitmap, RGB(0, 0, 0));
+
+				RoundRect(greenbitmap, 0, 0, 500, 500, 1, 1);
+
+				BLENDFUNCTION blendFunction;
+				blendFunction.BlendOp = AC_SRC_OVER;
+				blendFunction.BlendFlags = 0;
+				blendFunction.SourceConstantAlpha = 200;
+				blendFunction.AlphaFormat = AC_SRC_ALPHA;
+
+				AlphaBlend(hdc_popup,
+					0, 0, 1000, 1000,
+					greenbitmap,
+					0, 0, 500, 500,
+					blendFunction
+				);
+
+				SetTextColor(hdc_popup, RGB(0, 0, 0));
+				SetBkMode(hdc_popup, TRANSPARENT);
+
+				HFONT hFont = CreateFont(35, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS,
+					CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, TEXT("Arial"));
 				
-				// Set the text color to black
-				SetDCPenColor(hdc, RGB(0, 0, 0));
+				SelectObject(hdc_popup, hFont);
 
-				// Set the background mode to transparent
-				SetBkMode(hdc, TRANSPARENT);
+				SIZE textSize;
+				GetTextExtentPoint32(hdc_popup, L"Congratulations!", 17, &textSize);
 
-				RoundRect(hdc, 0, 0, 1000, 1000, 1, 1);
+				int size = my_board.size() * 30 + (my_board.size() - 1) * 3 + 10;
+				
+				int textX = (size - textSize.cx) / 2;
+				int textY = (size - textSize.cy) / 2;
+				TextOut(hdc_popup, textX, textY, L"Congratulations!", 17);
 
-				// Draw "Congratulations" text on the PC window
-				TextOut(hdc, 100, 100, L"Congratulations!", 17);
-				ReleaseDC(pc_popup, hdc);
+				SelectObject(greenbitmap, hOldBitmap);
+				DeleteObject(hBitmap);
+				DeleteDC(greenbitmap);
+				ReleaseDC(pc_popup, hdc_popup);
+			}
+
+			else
+			{
+				HDC hdc_popup = GetDC(pc_popup);
+				HDC greenbitmap = CreateCompatibleDC(hdc_popup);
+
+				HBITMAP hBitmap = CreateCompatibleBitmap(hdc_popup, 500, 500);
+				HBITMAP hOldBitmap = (HBITMAP)SelectObject(greenbitmap, hBitmap);
+
+				SelectObject(greenbitmap, GetStockObject(DC_BRUSH));
+				SelectObject(greenbitmap, GetStockObject(DC_PEN));
+				SetBkColor(greenbitmap, RGB(0, 0, 255));
+				SetDCBrushColor(greenbitmap, RGB(0, 0, 255));
+				SetDCPenColor(greenbitmap, RGB(0, 0, 0));
+
+				RoundRect(greenbitmap, 0, 0, 500, 500, 1, 1);
+
+				BLENDFUNCTION blendFunction;
+				blendFunction.BlendOp = AC_SRC_OVER;
+				blendFunction.BlendFlags = 0;
+				blendFunction.SourceConstantAlpha = 200;
+				blendFunction.AlphaFormat = AC_SRC_ALPHA;
+
+				AlphaBlend(hdc_popup,
+					0, 0, 1000, 1000,
+					greenbitmap,
+					0, 0, 500, 500,
+					blendFunction
+				);
+
+				SetTextColor(hdc_popup, RGB(0, 0, 0));
+				SetBkMode(hdc_popup, TRANSPARENT);
+
+				HFONT hFont = CreateFont(35, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS,
+					CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, TEXT("Arial"));
+
+				SelectObject(hdc_popup, hFont);
+
+				SIZE textSize;
+				textSize.cx = 80;
+				textSize.cy = 10;
+
+				int size = my_board.size() * 30 + (my_board.size() - 1) * 3 + 10;
+				// Calculate the position to center the text
+				int textX = (size - textSize.cx) / 2;
+				int textY = (size - textSize.cy) / 2;
+				TextOut(hdc_popup, textX, textY, L"Loser", 17);
+
+				// Release resources
+				SelectObject(greenbitmap, hOldBitmap);
+				DeleteObject(hBitmap);
+				DeleteDC(greenbitmap);
+				ReleaseDC(pc_popup, hdc_popup);
 			}
 		}
-
 
 		EndPaint(m_popup, &ps);
 		EndPaint(pc_popup, &ps);
@@ -289,11 +368,11 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 		RECT sizeM{ 0, 0, 502, 502 };
 		RECT sizeH{ 0, 0, 667, 667 };
 		int rnV1, rnV2;
-		// Parse the menu selections:
+
 		switch (wmId)
 		{
 		case ID_GRID_EASY:
-			// Set board size to 10x10
+			// board size: 10x10
 			rnV1 = board::my_random(1, 10000);
 			my_board = board::place_ships(10, rnV1);
 			rnV2 = board::my_random(10000, 100000000);
@@ -305,7 +384,7 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 			SaveDifficultyLevel("Easy");
 			break;
 		case ID_GRID_MEDIUM:
-			// Set board size to 15x15
+			// board size: 15x15
 			rnV1 = board::my_random(1, 10000);
 			my_board = board::place_ships(15, rnV1);
 			rnV2 = board::my_random(10000, 100000000);
@@ -317,7 +396,7 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 			SaveDifficultyLevel("Medium");
 			break;
 		case ID_GRID_HARD:
-			// Set board size to 20x20
+			// board size: 20x20
 			rnV1 = board::my_random(1, 10000);
 			my_board = board::place_ships(20, rnV1);
 			rnV2 = board::my_random(10000, 100000000);
@@ -328,7 +407,6 @@ LRESULT app_battleship::window_proc(HWND window, UINT message, WPARAM wparam, LP
 			SetBoardSize(pc_popup, sizeH.right - sizeH.left, sizeH.bottom - sizeH.top);
 			SaveDifficultyLevel("Hard");
 			break;
-			// Handle other menu options as needed
 		}
 		break;
 	}
@@ -374,18 +452,14 @@ int app_battleship::run(int show_command)
 
 void app_battleship::on_window_move(HWND window, LPWINDOWPOS params)
 {
-	// Calculate the center of the moved window
 	POINT Pw = { params->x, params->y };
 	SIZE Sw = { params->cx, params->cy };
 	POINT Cw = { Pw.x + Sw.cx / 2, Pw.y + Sw.cy / 2 };
 
-	// Calculate the center of the screen
 	POINT Ss_center = { m_screen_size.x / 2, m_screen_size.y / 2 };
 
-	// Calculate the new position of the top-left corner of the moved window
 	POINT Po = { Cw.x - Sw.cx / 2, Cw.y - Sw.cy / 2 };
 
-	// Set the new position of the moved window
 	SetWindowPos(
 		window,
 		nullptr,
@@ -394,29 +468,20 @@ void app_battleship::on_window_move(HWND window, LPWINDOWPOS params)
 		0,
 		0,
 		SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOZORDER);
-
-	// Update the transparency for the moved window
+	
 	if (window == m_main || window == m_popup || window == pc_popup)
 	{
 		update_transparency();
 	}
+	
 }
 
 void app_battleship::update_transparency()
 {
-	RECT main_rc, popup_rc, intersection;
-
-	GetWindowRect(m_main, &main_rc);
-	GetWindowRect(m_popup, &popup_rc);
-
-	IntersectRect(&intersection, &main_rc, &popup_rc);
-	BYTE a =
-		IsRectEmpty(&intersection) ? 255 : 255 * 30 / 100;
-	SetLayeredWindowAttributes(m_popup, 0, a, LWA_ALPHA);
+	SetLayeredWindowAttributes(m_main, 0, 255 * 70 / 100, LWA_ALPHA);
 }
 
 void app_battleship::SetBoardSize(HWND hWnd, int width, int height) {
-	// Set the size of the board window
 	SetWindowPos(hWnd, NULL, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
 
 	InvalidateRect(hWnd, NULL, TRUE);
@@ -424,27 +489,20 @@ void app_battleship::SetBoardSize(HWND hWnd, int width, int height) {
 
 void app_battleship::DrawGridCells_my(HDC hdc)
 {
-	// Define the size of each grid cell and the number of rows and columns
-	const int cellSize = 30; // Grid cell size: 30px
-	const int margin = 5;    // Margin from the edge of the window: 5px
-	const int marginBetweenCells = 3; // Margin between grid cells: 3px
-	const int roundRadius = 5; // Radius for rounded corners
+	const int cellSize = 30;
+	const int margin = 5;
+	const int marginBetweenCells = 3;
+	const int roundRadius = 5;
 
 	int numRows = my_board.size();
 	int numCols = numRows;
 
-	// Set the background color of the device context to white
-	SetBkColor(hdc, RGB(255, 255, 255)); // White color
+	SetBkColor(hdc, RGB(255, 255, 255)); 
 
-	//RECT gridRect = { 0, 0, numCols * (cellSize + marginBetweenCells) + margin, numRows * (cellSize + marginBetweenCells) + margin };
-	//FillRect(hdc, &gridRect, (HBRUSH)GetStockObject(WHITE_BRUSH)); // Fill with red color
-
-	// Example: Draw numbers in each grid cell
 	for (int row = 0; row < numRows; ++row)
 	{
 		for (int col = 0; col < numCols; ++col)
 		{
-			// Calculate the position of the current cell
 			int x = margin + row * (cellSize + marginBetweenCells);
 			int y = margin + col * (cellSize + marginBetweenCells);
 
@@ -487,23 +545,21 @@ void app_battleship::DrawGridCells_my(HDC hdc)
 				SetDCPenColor(hdc, RGB(0, 0, 0));
 			}
 
-			// Draw the background of the cell (rounded rectangle)
 			RoundRect(hdc, x, y, x + cellSize, y + cellSize, roundRadius, roundRadius);
 
-			// Draw content in the cell (e.g., numbers)
 			WCHAR text[2];
 			if (shipOnPos != 10)
 			{
 				
 				if (shipOnPos > 0 && shipOnPos < 5)
 				{
-					swprintf(text, 2, L"%d", shipOnPos); // Example: Row-major numbering
+					swprintf(text, 2, L"%d", shipOnPos);
 					TextOut(hdc, x + cellSize / 2 - 5, y + cellSize / 2 - 5, text, lstrlen(text));
 				}
 				
 				if (shipOnPos > 10 && shipOnPos < 20)
 				{
-					swprintf(text, 2, L"X"); // Example: Row-major numbering
+					swprintf(text, 2, L"X");
 					TextOut(hdc, x + cellSize / 2 - 5, y + cellSize / 2 - 5, text, lstrlen(text));
 				}
 				if (shipOnPos == 20)
@@ -518,27 +574,20 @@ void app_battleship::DrawGridCells_my(HDC hdc)
 
 void app_battleship::DrawGridCells_pc(HDC hdc)
 {
-	// Define the size of each grid cell and the number of rows and columns
-	const int cellSize = 30; // Grid cell size: 30px
-	const int margin = 5;    // Margin from the edge of the window: 5px
-	const int marginBetweenCells = 3; // Margin between grid cells: 3px
-	const int roundRadius = 5; // Radius for rounded corners
+	const int cellSize = 30;
+	const int margin = 5;
+	const int marginBetweenCells = 3;
+	const int roundRadius = 5;
 
 	int numRows = pc_board.size();
 	int numCols = numRows;
 
-	// Set the background color of the device context to white
-	SetBkColor(hdc, RGB(255, 255, 255)); // White color
+	SetBkColor(hdc, RGB(255, 255, 255));
 
-	//RECT gridRect = { 0, 0, numCols * (cellSize + marginBetweenCells) + margin, numRows * (cellSize + marginBetweenCells) + margin };
-	//FillRect(hdc, &gridRect, (HBRUSH)GetStockObject(WHITE_BRUSH)); // Fill with red color
-
-	// Example: Draw numbers in each grid cell
 	for (int row = 0; row < numRows; ++row)
 	{
 		for (int col = 0; col < numCols; ++col)
 		{
-			// Calculate the position of the current cell
 			int x = margin + row * (cellSize + marginBetweenCells);
 			int y = margin + col * (cellSize + marginBetweenCells);
 
@@ -581,25 +630,15 @@ void app_battleship::DrawGridCells_pc(HDC hdc)
 				SetDCPenColor(hdc, RGB(0, 0, 0));
 			}
 
-
-			// Draw the background of the cell (rounded rectangle)
 			RoundRect(hdc, x, y, x + cellSize, y + cellSize, roundRadius, roundRadius);
 
-			// Draw content in the cell (e.g., numbers)
 			WCHAR text[2];
 
 			if (shipOnPos != 10)
-			{
-				
-				if (shipOnPos > 0 && shipOnPos < 5)
-				{
-					swprintf(text, 2, L"%d", shipOnPos); // Example: Row-major numbering
-					TextOut(hdc, x + cellSize / 2 - 5, y + cellSize / 2 - 5, text, lstrlen(text));
-				}
-				
+			{	
 				if (shipOnPos > 10 && shipOnPos < 20)
 				{
-					swprintf(text, 2, L"X"); // Example: Row-major numbering
+					swprintf(text, 2, L"X");
 					TextOut(hdc, x + cellSize / 2 - 5, y + cellSize / 2 - 5, text, lstrlen(text));
 				}
 				if (shipOnPos == 20)
@@ -614,30 +653,25 @@ void app_battleship::DrawGridCells_pc(HDC hdc)
 
 void app_battleship::ShowSystemMenu(HWND window)
 {
-	// Get the handle to the system menu
 	HMENU hSysMenu = GetSystemMenu(window, FALSE);
 	if (hSysMenu != nullptr)
 	{
-		// Get the current mouse position
 		POINT pt;
 		GetCursorPos(&pt);
 
-		// Display the system menu at the mouse position
 		TrackPopupMenu(hSysMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_LEFTBUTTON,
 			pt.x, pt.y, 0, window, nullptr);
 	}
 }
 
-// Save the chosen difficulty level to an INI file
 void app_battleship::SaveDifficultyLevel(const std::string& difficulty)
 {
 	WritePrivateProfileStringA("Settings", "DifficultyLevel", difficulty.c_str(), "settings.ini");
 }
 
-// Load the chosen difficulty level from the INI file
 std::string app_battleship::LoadDifficultyLevel()
 {
-	const int bufferSize = 256; // Adjust the buffer size as needed
+	const int bufferSize = 256;
 	char buffer[bufferSize];
 	GetPrivateProfileStringA("Settings", "DifficultyLevel", "", buffer, bufferSize, "settings.ini");
 	return buffer;
@@ -645,12 +679,22 @@ std::string app_battleship::LoadDifficultyLevel()
 
 void app_battleship::search_and_order(int neighborX, int neighborY, HWND window)
 {
-	if (neighborX >= 0 && neighborX < pc_board.size() && neighborY >= 0 && neighborY < pc_board.size())
+	int size = pc_board.size();
+	int temp = 1;
+
+	if (neighborX >= 0 && neighborX < size && neighborY >= 0 && neighborY < size)
 	{
-		int temp = pc_board[neighborX][neighborY];
+		if(window == pc_popup)
+			temp = pc_board[neighborX][neighborY];
+		if(window == m_popup)
+			temp = my_board[neighborX][neighborY];
+
 		if (temp == 10)
 		{
-			pc_board[neighborX][neighborY] = temp + 11;
+			if (window == pc_popup)
+				pc_board[neighborX][neighborY] = temp + 11;
+			if (window == m_popup)
+				my_board[neighborX][neighborY] = temp + 11;
 
 			RECT redrawField;
 			int cellSpacing = app_battleship::cellSize + app_battleship::marginBetweenCells;
@@ -667,10 +711,8 @@ void app_battleship::search_and_order(int neighborX, int neighborY, HWND window)
 
 void app_battleship::Ship1Sunk(POINT position, HWND window)
 {
-	// our ship position.x position.y
 	int offsets[3] = { -1, 0, 1 };
 
-	// Iterate over neighboring cells
 	for (int xOffset : offsets)
 	{
 		for (int yOffset : offsets)
@@ -678,7 +720,6 @@ void app_battleship::Ship1Sunk(POINT position, HWND window)
 			int neighborX = position.x + xOffset;
 			int neighborY = position.y + yOffset;
 
-			// Check if the neighbor cell is within bounds
 			search_and_order(neighborX, neighborY, window);
 		}
 	}
@@ -691,8 +732,8 @@ void app_battleship::Ship2Sunk(POINT position, HWND window)
 	// our ship position.x position.y
 	int offsets[3] = { -1, 0, 1 };
 	POINT position2;
+	int temp = 1;
 
-	// Iterate over neighboring cells
 	for (int xOffset : offsets)
 	{
 		for (int yOffset : offsets)
@@ -700,12 +741,15 @@ void app_battleship::Ship2Sunk(POINT position, HWND window)
 			int neighborX = position.x + xOffset;
 			int neighborY = position.y + yOffset;
 
-			// Check if the neighbor cell is within bounds
 			if (neighborX >= 0 && neighborX < pc_board.size() && neighborY >= 0 && neighborY < pc_board.size())
 			{
 				if (!(xOffset == 0 && yOffset == 0))
 				{
-					int temp = pc_board[neighborX][neighborY];
+					if (window == pc_popup)
+						temp = pc_board[neighborX][neighborY];
+					if (window == m_popup)
+						temp = my_board[neighborX][neighborY];
+
 					if (temp == 12)
 					{
 						isSunk = true;
@@ -729,7 +773,6 @@ void app_battleship::Ship2Sunk(POINT position, HWND window)
 				int neighbor2X = position2.x + xOffset;
 				int neighbor2Y = position2.y + yOffset;
 
-				// Check if the neighbor cell is within bounds
 				search_and_order(neighborX, neighborY, window);
 				search_and_order(neighbor2X, neighbor2Y, window);
 			}
@@ -748,60 +791,121 @@ void app_battleship::Ship3Sunk(POINT position, HWND window)
 	int x = position.x;
 	int y = position.y;
 	int size = pc_board.size();
-
-	if (x + 1 < size && pc_board[x + 1][y] == 13)
+	if (window == pc_popup)
 	{
-		counter++;
-		positions[counter].x = x + 1;
-		positions[counter].y = y;
-
-		if (x + 2 < size && pc_board[x + 2][y] == 13)
+		if (x + 1 < size && pc_board[x + 1][y] == 13)
 		{
 			counter++;
-			positions[counter].x = x + 2;
+			positions[counter].x = x + 1;
 			positions[counter].y = y;
+
+			if (x + 2 < size && pc_board[x + 2][y] == 13)
+			{
+				counter++;
+				positions[counter].x = x + 2;
+				positions[counter].y = y;
+			}
 		}
-	}
 
-	if (x - 1 >= 0 && pc_board[x - 1][y] == 13)
-	{
-		counter++;
-		positions[counter].x = x - 1;
-		positions[counter].y = y;
-
-		if (x - 2 >= 0 && pc_board[x - 2][y] == 13)
+		if (x - 1 >= 0 && pc_board[x - 1][y] == 13)
 		{
 			counter++;
-			positions[counter].x = x - 2;
+			positions[counter].x = x - 1;
 			positions[counter].y = y;
-		}
-	}
 
-	if (y + 1 < size && pc_board[x][y + 1] == 13)
-	{
-		counter++;
-		positions[counter].x = x;
-		positions[counter].y = y + 1;
-		
-		if (y + 2 < size && pc_board[x][y + 2] == 13)
+			if (x - 2 >= 0 && pc_board[x - 2][y] == 13)
+			{
+				counter++;
+				positions[counter].x = x - 2;
+				positions[counter].y = y;
+			}
+		}
+
+		if (y + 1 < size && pc_board[x][y + 1] == 13)
 		{
 			counter++;
 			positions[counter].x = x;
-			positions[counter].y = y + 2;
+			positions[counter].y = y + 1;
+
+			if (y + 2 < size && pc_board[x][y + 2] == 13)
+			{
+				counter++;
+				positions[counter].x = x;
+				positions[counter].y = y + 2;
+			}
 		}
-	}
 
-	if (y - 1 >= 0 && pc_board[x][y - 1] == 13)
-	{
-		counter++;
-		positions[counter].x = x;
-		positions[counter].y = y - 1;
-
-		if (y - 2 >= 0 && pc_board[x][y - 2] == 13)
+		if (y - 1 >= 0 && pc_board[x][y - 1] == 13)
 		{
 			counter++;
 			positions[counter].x = x;
-			positions[counter].y = y - 2;
+			positions[counter].y = y - 1;
+
+			if (y - 2 >= 0 && pc_board[x][y - 2] == 13)
+			{
+				counter++;
+				positions[counter].x = x;
+				positions[counter].y = y - 2;
+			}
+		}
+	}
+	
+	if (window == m_popup)
+	{
+		if (x + 1 < size && my_board[x + 1][y] == 13)
+		{
+			counter++;
+			positions[counter].x = x + 1;
+			positions[counter].y = y;
+
+			if (x + 2 < size && my_board[x + 2][y] == 13)
+			{
+				counter++;
+				positions[counter].x = x + 2;
+				positions[counter].y = y;
+			}
+		}
+
+		if (x - 1 >= 0 && my_board[x - 1][y] == 13)
+		{
+			counter++;
+			positions[counter].x = x - 1;
+			positions[counter].y = y;
+
+			if (x - 2 >= 0 && my_board[x - 2][y] == 13)
+			{
+				counter++;
+				positions[counter].x = x - 2;
+				positions[counter].y = y;
+			}
+		}
+
+		if (y + 1 < size && my_board[x][y + 1] == 13)
+		{
+			counter++;
+			positions[counter].x = x;
+			positions[counter].y = y + 1;
+
+			if (y + 2 < size && my_board[x][y + 2] == 13)
+			{
+				counter++;
+				positions[counter].x = x;
+				positions[counter].y = y + 2;
+			}
+		}
+
+		if (y - 1 >= 0 && my_board[x][y - 1] == 13)
+		{
+			counter++;
+			positions[counter].x = x;
+			positions[counter].y = y - 1;
+
+			if (y - 2 >= 0 && my_board[x][y - 2] == 13)
+			{
+				counter++;
+				positions[counter].x = x;
+				positions[counter].y = y - 2;
+			}
 		}
 	}
 
@@ -831,13 +935,17 @@ void app_battleship::Ship4Sunk(POINT position, HWND window)
 
 	int size = pc_board.size();
 	int counter = 0;
+	int temp;
 
-	// Iterate over neighboring cells
 	for (int i = 0; i < size; i++)
 	{
 		for (int j = 0; j < size; j++)
 		{
-			int temp = pc_board[i][j];
+			if (window == pc_popup)
+				temp = pc_board[i][j];
+			if (window == m_popup)
+				temp = my_board[i][j];
+
 			if (temp == 14)
 			{
 				positions[counter].x = i;
@@ -931,17 +1039,14 @@ void app_battleship::CellRedraw_pc(HWND window, POINT clickPoint)
 {
 	POINT cellRedraw = play_game::OnLButtonDown(window, clickPoint, 1);
 	my_success = false;
-
-	if (cellRedraw.x == -7)
-	{
-		my_success = true;
-	}
+	my_valid_move = false;
 
 	if (cellRedraw.x != -7)
 	{
 		int temp = pc_board[cellRedraw.x][cellRedraw.y];
 		if (temp < 11)
 		{
+			my_valid_move = true;
 			pc_board[cellRedraw.x][cellRedraw.y] = temp + 10;
 			temp = pc_board[cellRedraw.x][cellRedraw.y];
 
@@ -1030,6 +1135,7 @@ bool app_battleship::WinningGame()
 }
 
 static std::vector<std::vector<std::vector<int>>> statisticStatus;
+static std::vector<std::vector<std::vector<int>>> statisticStatus_my;
 
 void app_battleship::scanShipSize1()
 {
@@ -1046,6 +1152,29 @@ void app_battleship::scanShipSize1()
 			{
 				fire = 1;
 				statisticStatus[1][shipNumber][0] = 1;
+				shipNumber++;
+			}
+
+		}
+	}
+
+}
+
+void app_battleship::scanShipSize1_my()
+{
+	int shipNumber = 0;
+
+	for (int x = 0; x < my_board.size(); x++)
+	{
+		for (int y = 0; y < my_board.size(); y++)
+		{
+			int cellValue = my_board[x][y];
+			int fire = -1;
+
+			if(my_board[x][y] == 11)
+			{
+				fire = 1;
+				statisticStatus_my[1][shipNumber][0] = 1;
 				shipNumber++;
 			}
 
@@ -1099,6 +1228,60 @@ void app_battleship::scanVertical_pc_size(int shipSize)
 			else
 			{
 				newFire = 1;
+				shipSegment = 0;
+			}
+
+		}
+	}
+
+}
+
+void app_battleship::scanVertical_my_size(int shipSize)
+{
+	int shipNumber = -1;
+	int shipSegment = -1;
+	int newFire = -1;
+
+	for (int x = 0; x < my_board.size(); x++)
+	{
+		shipSegment = 0;
+		newFire = 1;
+
+		for (int y = 0; y < my_board.size(); y++)
+		{
+			int cellValue = my_board[x][y];
+			int fire = -1;
+
+			if (
+				(my_board[x][y] == (10 + shipSize)) &&
+				(
+					(y + 1 < my_board.size()) &&
+					((my_board[x][y + 1] == (10 + shipSize)) || (my_board[x][y + 1] == (shipSize)))
+					||
+					(y - 1 > 0) &&
+					((my_board[x][y - 1] == (10 + shipSize)) || (my_board[x][y - 1] == (shipSize)))
+					)
+				)
+				fire = 1;
+			else
+				fire = 0;
+
+
+			if (fire == 1)
+			{
+				if (newFire == 1)
+				{
+					newFire = 0;
+					shipNumber++;
+				}
+
+				statisticStatus_my[shipSize][shipNumber][shipSegment] = fire;
+				shipSegment++;
+			}
+			else
+			{
+				newFire = 1;
+				shipSegment = 0;
 			}
 
 		}
@@ -1114,13 +1297,20 @@ void app_battleship::scanVertical_pc()
 	scanVertical_pc_size(2);
 }
 
+void app_battleship::scanVertical_my()
+{
+
+	scanVertical_my_size(4);
+	scanVertical_my_size(3);
+	scanVertical_my_size(2);
+}
+
 void app_battleship::scanHorizontal_pc_size(int shipSize)
 {
 	int shipNumber = -1;
 	int shipSegment = -1;
 	int newFire = -1;
 
-	// 
 	for (int y = 0; y < pc_board.size(); y++)
 	{
 		shipSegment = 0;
@@ -1154,7 +1344,7 @@ void app_battleship::scanHorizontal_pc_size(int shipSize)
 					shipNumber++;
 
 					while (statisticStatus[shipSize][shipNumber][shipSegment] == 1)
-						shipNumber++; //Burning vertical
+						shipNumber++;
 				}
 
 				statisticStatus[shipSize][shipNumber][shipSegment] = fire;
@@ -1163,6 +1353,63 @@ void app_battleship::scanHorizontal_pc_size(int shipSize)
 			else
 			{
 				newFire = 1;
+				shipSegment = 0;
+			}
+
+		}
+	}
+
+}
+
+void app_battleship::scanHorizontal_my_size(int shipSize)
+{
+	int shipNumber = -1;
+	int shipSegment = -1;
+	int newFire = -1;
+
+	for (int y = 0; y < my_board.size(); y++)
+	{
+		shipSegment = 0;
+		newFire = 1;
+
+		for (int x = 0; x < my_board.size(); x++)
+		{
+			int cellValue = my_board[x][y];
+			int fire = -1;
+
+			if (
+				(my_board[x][y] == (10 + shipSize)) &&
+				(
+					(x + 1 < my_board.size()) &&
+					((my_board[x + 1][y] == (10 + shipSize)) || (my_board[x + 1][y] == (shipSize)))
+					||
+					(x - 1 > 0) &&
+					((my_board[x - 1][y] == (10 + shipSize)) || (my_board[x - 1][y] == (shipSize)))
+					)
+				)
+				fire = 1;
+			else
+				fire = 0;
+
+
+			if (fire == 1)
+			{
+				if (newFire == 1)
+				{
+					newFire = 0;
+					shipNumber++;
+
+					while (statisticStatus_my[shipSize][shipNumber][shipSegment] == 1)
+						shipNumber++;
+				}
+
+				statisticStatus_my[shipSize][shipNumber][shipSegment] = fire;
+				shipSegment++;
+			}
+			else
+			{
+				newFire = 1;
+				shipSegment = 0;
 			}
 
 		}
@@ -1178,6 +1425,14 @@ void app_battleship::scanHorizontal_pc()
 	scanHorizontal_pc_size(2);
 }
 
+void app_battleship::scanHorizontal_my()
+{
+
+	scanHorizontal_my_size(4);
+	scanHorizontal_my_size(3);
+	scanHorizontal_my_size(2);
+}
+
 void app_battleship::scanStatistics()
 {
 	statisticStatus = std::vector<std::vector<std::vector<int>>>
@@ -1188,7 +1443,22 @@ void app_battleship::scanStatistics()
 	scanShipSize1();
 }
 
+void app_battleship::scanMyStatistics()
+{
+	statisticStatus_my = std::vector<std::vector<std::vector<int>>>
+		(5, std::vector<std::vector<int>>(5, std::vector<int>(5, 0)));
+
+	scanVertical_my();
+	scanHorizontal_my();
+	scanShipSize1_my();
+}
+
 int app_battleship::getStatValue(int shipSize, int shipRow, int shipSegment)
 {
 	return statisticStatus[shipSize][shipRow][shipSegment];
+}
+
+int app_battleship::getMyStatValue(int shipSize, int shipRow, int shipSegment)
+{
+	return statisticStatus_my[shipSize][shipRow][shipSegment];
 }

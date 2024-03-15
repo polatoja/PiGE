@@ -10,7 +10,6 @@ class app_battleship
 {
 private:
 	bool register_class();
-	//bool register_popup_class();
 	static std::wstring const s_class_name;
 	static LRESULT CALLBACK window_proc_static(
 		HWND window,
@@ -57,6 +56,7 @@ private:
 	void Ship4Sunk(POINT position, HWND window);
 	bool my_success = false;
 	bool pc_success = false;
+	bool my_valid_move = false;
 
 	void ShowSystemMenu(HWND window);
 	void SaveDifficultyLevel(const std::string& difficulty);
@@ -78,17 +78,24 @@ private:
 	static void scanVertical_pc();
 	static void scanShipSize1();
 
+	static void scanHorizontal_my_size(int shipSize);
+	static void scanHorizontal_my();
+	static void scanVertical_my_size(int shipSize);
+	static void scanVertical_my();
+	static void scanShipSize1_my();
+
 public:
 	app_battleship(HINSTANCE instance);
 	int run(int show_command);
 
-	// Define the size of each grid cell and the number of rows and columns
-	static const int cellSize = 30; // Grid cell size: 30px
-	static const int margin = 5;    // Margin from the edge of the window: 5px
-	static const int marginBetweenCells = 3; // Margin between grid cells: 3px
-	static const int roundRadius = 5; // Radius for rounded corners
+	static const int cellSize = 30; // grid cell size: 30px
+	static const int margin = 5;    // margin from the edge of the window: 5px
+	static const int marginBetweenCells = 3; // margin between grid cells: 3px
+	static const int roundRadius = 5; // radius for rounded corners
 
 	static void scanStatistics();
+	static void scanMyStatistics();
 
 	static int getStatValue(int shipSize, int shipRow, int shipSegment);
+	static int getMyStatValue(int shipSize, int shipRow, int shipSegment);
 };

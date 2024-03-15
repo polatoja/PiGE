@@ -7,14 +7,12 @@ void draw_statistics::DrawShipSize(HDC hdc, int xoffset, int yoffset, int shipSi
 	{
 		for (int y = 0; y < shipSize; y++)
 		{
-			// Choose infosquare color based on: playerID, shipSize, row, y=vertical position in a ship
-			// TODO: data is here:
-			// app_battleship::statisticStatus[shipSize][row][y] 0/1
-
 			int statValue = 0;
 
 			if (playerID == 1)
 				statValue = app_battleship::getStatValue(shipSize, row, y);
+			if (playerID == 0)
+				statValue = app_battleship::getMyStatValue(shipSize, row, y);
 
 			SelectObject(hdc, GetStockObject(DC_BRUSH));
 			SelectObject(hdc, GetStockObject(DC_PEN));
@@ -54,6 +52,7 @@ void draw_statistics::Draw1playerShips(HDC hdc, int xoffset, int yoffset, int pl
 void draw_statistics::Draw(HDC hdc)
 {
 	app_battleship::scanStatistics();
+	app_battleship::scanMyStatistics();
 
 	Draw1playerShips(hdc, boardMargin, boardMargin, 0);
 	Draw1playerShips(hdc, 10 * (statW + statMargin) + 3 * shipSizeMargin + statWgap + boardMargin, boardMargin, 1);

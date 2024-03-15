@@ -12,12 +12,11 @@ POINT play_game::OnLButtonDown(HWND hWindow, POINT clickPoint, int my_or_pc)
 	int board_x = clickPoint.x - app_battleship::margin + cellSpacing;
 	int board_y = clickPoint.y - app_battleship::margin + cellSpacing;
 
-	// Check if pixel is on the field or not (is between cells)
 	if (board_x % cellSpacing > app_battleship::cellSize)
-		board_x = -7; // on vertical margin
+		board_x = -7;
 
 	if (board_y % cellSpacing > app_battleship::cellSize)
-		board_y = -7; // on horizontal margin
+		board_y = -7;
 
 	if (board_x == -7 || board_y == -7)
 	{

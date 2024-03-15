@@ -1,6 +1,6 @@
 #include "board.h"
-#include <cstdlib> // For rand() and srand()
-#include <ctime>   // For time()
+#include <cstdlib>
+#include <ctime>
 
 std::vector<std::vector<int>> board::grid;
 
