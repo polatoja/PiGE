@@ -1,0 +1,16 @@
+H:\Windows7\Desktop\GradedLab\GradedLab\bin\Debug\net8.0-windows\GradedLab.exe
+H:\Windows7\Desktop\GradedLab\GradedLab\bin\Debug\net8.0-windows\GradedLab.deps.json
+H:\Windows7\Desktop\GradedLab\GradedLab\bin\Debug\net8.0-windows\GradedLab.runtimeconfig.json
+H:\Windows7\Desktop\GradedLab\GradedLab\bin\Debug\net8.0-windows\GradedLab.dll
+H:\Windows7\Desktop\GradedLab\GradedLab\bin\Debug\net8.0-windows\GradedLab.pdb
+H:\Windows7\Desktop\GradedLab\GradedLab\obj\Debug\net8.0-windows\GradedLab.Form1.resources
+H:\Windows7\Desktop\GradedLab\GradedLab\obj\Debug\net8.0-windows\GradedLab.csproj.GenerateResource.cache
+H:\Windows7\Desktop\GradedLab\GradedLab\obj\Debug\net8.0-windows\GradedLab.GeneratedMSBuildEditorConfig.editorconfig
+H:\Windows7\Desktop\GradedLab\GradedLab\obj\Debug\net8.0-windows\GradedLab.AssemblyInfoInputs.cache
+H:\Windows7\Desktop\GradedLab\GradedLab\obj\Debug\net8.0-windows\GradedLab.AssemblyInfo.cs
+H:\Windows7\Desktop\GradedLab\GradedLab\obj\Debug\net8.0-windows\GradedLab.csproj.CoreCompileInputs.cache
+H:\Windows7\Desktop\GradedLab\GradedLab\obj\Debug\net8.0-windows\GradedLab.dll
+H:\Windows7\Desktop\GradedLab\GradedLab\obj\Debug\net8.0-windows\refint\GradedLab.dll
+H:\Windows7\Desktop\GradedLab\GradedLab\obj\Debug\net8.0-windows\GradedLab.pdb
+H:\Windows7\Desktop\GradedLab\GradedLab\obj\Debug\net8.0-windows\GradedLab.genruntimeconfig.cache
+H:\Windows7\Desktop\GradedLab\GradedLab\obj\Debug\net8.0-windows\ref\GradedLab.dll
