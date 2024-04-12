@@ -1,48 +1,45 @@
 {
   "version": 3,
   "targets": {
-    "net8.0-windows7.0": {}
+    "net7.0-windows7.0": {}
   },
   "libraries": {},
   "projectFileDependencyGroups": {
-    "net8.0-windows7.0": []
+    "net7.0-windows7.0": []
   },
   "packageFolders": {
-    "C:\\Users\\topolewskam\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {},
-    "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\": {},
-    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
+    "C:\\Users\\majat\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "H:\\Windows7\\Desktop\\GradedLab\\GradedLab\\GradedLab.csproj",
+      "projectUniqueName": "C:\\Users\\majat\\Dokumenty\\GitHub\\PiGE\\GradedLab\\GradedLab\\GradedLab.csproj",
       "projectName": "GradedLab",
-      "projectPath": "H:\\Windows7\\Desktop\\GradedLab\\GradedLab\\GradedLab.csproj",
-      "packagesPath": "C:\\Users\\topolewskam\\.nuget\\packages\\",
-      "outputPath": "H:\\Windows7\\Desktop\\GradedLab\\GradedLab\\obj\\",
+      "projectPath": "C:\\Users\\majat\\Dokumenty\\GitHub\\PiGE\\GradedLab\\GradedLab\\GradedLab.csproj",
+      "packagesPath": "C:\\Users\\majat\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\majat\\Dokumenty\\GitHub\\PiGE\\GradedLab\\GradedLab\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-        "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
-        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\topolewskam\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\majat\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
-        "net8.0-windows"
+        "net7.0-windows"
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
+        "C:\\Users\\majat\\OneDrive\\Dokumenty\\GitHub\\Object-Oriented-Design\\FlightTrackerGUI_dotnet8": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
-        "net8.0-windows7.0": {
-          "targetAlias": "net8.0-windows",
+        "net7.0-windows7.0": {
+          "targetAlias": "net7.0-windows",
           "projectReferences": {}
         }
       },
@@ -53,8 +50,8 @@
       }
     },
     "frameworks": {
-      "net8.0-windows7.0": {
-        "targetAlias": "net8.0-windows",
+      "net7.0-windows7.0": {
+        "targetAlias": "net7.0-windows",
         "imports": [
           "net461",
           "net462",
@@ -74,7 +71,7 @@
             "privateAssets": "none"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.101/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.100\\RuntimeIdentifierGraph.json"
       }
     }
   }
