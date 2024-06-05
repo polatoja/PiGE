@@ -1,0 +1,51 @@
+FirstName;LastName;Sex;BirthDate;BirthCountry;Salary;SalaryCurrency;CompanyRole
+Lenore;Hilbert;Female;14.10.1980 00:00:00;Romania;100000;NOK;Worker
+Ronni;Millsap;Female;03.01.1982 00:00:00;Faroe Islands;9300;USD;IT
+Lela;Stidham;Female;19.11.1990 00:00:00;Greece;6400;GBP;IT
+Amber;Osterberg;Female;23.07.1986 00:00:00;Jersey;8800;EUR;SeniorWorker
+Lou;Bevil;Male;12.06.1993 00:00:00;Denmark;5200;EUR;SeniorWorker
+Maile;Shirkey;Female;18.11.1985 00:00:00;Sweden;5800;NOK;Manager
+Lon;Hutcherson;Male;19.01.1987 00:00:00;Belgium;6300;GBP;Manager
+Olevia;Pattillo;Female;08.12.1992 00:00:00;Hungary;6700;PLN;Director
+Kym;Begley;Female;12.02.1987 00:00:00;Andorra;5800;EUR;Worker
+Marvel;Wilczynski;Female;16.11.1991 00:00:00;Latvia;6500;EUR;Worker
+Melinda;Hennig;Female;26.11.1977 00:00:00;Malta;8100;NOK;Manager
+Whitney;Berlanga;Male;17.05.1985 00:00:00;Finland;7500;EUR;Director
+Thu;Presutti;Female;21.10.1994 00:00:00;Iceland;9900;EUR;SeniorWorker
+Ezequiel;Raminez;Male;20.11.1982 00:00:00;Russian Federation;6200;GBP;SeniorWorker
+Toshiko;Wisecarver;Female;05.08.1990 00:00:00;Austria;7800;GBP;SeniorWorker
+Allena;Voll;Female;26.07.1981 00:00:00;Macedonia (the former Yugoslav Republic of);7200;USD;IT
+Jean;Suess;Male;15.10.1987 00:00:00;United Kingdom of Great Britain and Northern Ireland;7000;EUR;IT
+Jennie;Gatchell;Female;03.09.1981 00:00:00;Gibraltar;5700;GBP;Director
+Carlton;Vanduyne;Male;07.03.1990 00:00:00;Ukraine;9200;NOK;Worker
+Louise;Depuy;Female;12.05.1988 00:00:00;Netherlands;6500;EUR;IT
+Lorelei;Mcmorris;Female;04.04.1988 00:00:00;Moldova (Republic of);7700;GBP;IT
+Sanjuanita;Bryson;Female;08.05.1977 00:00:00;Norway;8600;USD;IT
+Pete;Archambeault;Male;18.03.1977 00:00:00;Belarus;8700;NOK;IT
+Yvone;Sedlacek;Female;20.12.1990 00:00:00;Italy;9600;EUR;Worker
+Eloy;Norsworthy;Male;01.06.1988 00:00:00;France;9300;USD;IT
+Yong;Urban;Male;03.10.1992 00:00:00;Serbia;6300;GBP;Worker
+Delaine;Zastrow;Female;29.04.1981 00:00:00;San Marino;8400;GBP;Worker
+Xochitl;Rodrigez;Female;20.01.1982 00:00:00;Germany;6200;EUR;Worker
+Raleigh;Alton;Male;02.09.1987 00:00:00;Luxembourg;5700;NOK;Director
+Kimberely;Boatwright;Female;09.05.1978 00:00:00;Ireland;6500;PLN;Worker
+Daisy;Pineau;Female;20.05.1987 00:00:00;?land Islands;5900;GBP;Director
+Antoinette;Watkin;Female;22.01.1991 00:00:00;Lithuania;5000;USD;SeniorWorker
+Nickole;Baine;Female;09.06.1993 00:00:00;Slovenia;7000;USD;Director
+Dylan;Keithley;Male;11.12.1993 00:00:00;Croatia;6200;GBP;Worker
+Camila;Cannella;Female;03.03.1986 00:00:00;Bosnia and Herzegovina;6000;PLN;Worker
+Dorthey;Phares;Female;21.07.1979 00:00:00;Switzerland;5700;USD;CEO
+Krishna;Killough;Female;30.09.1980 00:00:00;Montenegro;6000;GBP;SeniorWorker
+Dortha;Arnette;Female;14.10.1989 00:00:00;Poland;6800;GBP;Director
+Estelle;Belz;Female;23.06.1990 00:00:00;Slovakia;7400;USD;Manager
+Stacey;Sokolowski;Male;19.11.1977 00:00:00;Monaco;7400;EUR;SeniorWorker
+Valeri;Groom;Female;26.08.1994 00:00:00;Bulgaria;5300;USD;Worker
+Louis;Wilkey;Male;17.08.1994 00:00:00;Holy See;7700;GBP;Worker
+Dominick;Carn;Male;01.03.1981 00:00:00;Guernsey;5000;GBP;Worker
+Romelia;Schoepp;Female;05.06.1982 00:00:00;Svalbard and Jan Mayen;8300;EUR;Manager
+Yon;Mutchler;Female;14.02.1982 00:00:00;Estonia;9900;USD;Director
+Eulah;Littleton;Female;21.09.1988 00:00:00;Liechtenstein;6800;EUR;Worker
+Genevieve;Legault;Female;01.02.1988 00:00:00;Isle of Man;9900;EUR;IT
+Tijuana;Farless;Female;17.10.1983 00:00:00;Spain;9800;USD;Director
+Seymour;Schuelke;Male;20.11.1987 00:00:00;Czechia;8300;EUR;Manager
+Germaine;Boye;Female;25.09.1982 00:00:00;Portugal;8800;PLN;Manager

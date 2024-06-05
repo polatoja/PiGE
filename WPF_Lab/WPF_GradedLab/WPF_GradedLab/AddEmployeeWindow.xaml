@@ -1,0 +1,84 @@
+﻿<Window x:Class="WPF_GradedLab.AddEmployeeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:WPF_GradedLab"
+        xmlns:System="clr-namespace:System;assembly=mscorlib"
+        Title="Add Employee" FontSize="14" Height="500" Width="500"
+        WindowStartupLocation="CenterScreen" Topmost="True" ResizeMode="CanMinimize" ShowInTaskbar="False">
+
+    <Window.Resources>
+        <ObjectDataProvider x:Key="CurrencyValues" MethodName="GetValues"  ObjectType="{x:Type TypeName=System:Enum}" >
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="local:Currency" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+
+        <ObjectDataProvider x:Key="RoleValues" MethodName="GetValues"  ObjectType="{x:Type TypeName=System:Enum}" >
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="local:Role" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        
+        <local:SexConverter x:Key="SexConverter"/>
+    </Window.Resources>
+
+    <Window.DataContext>
+        <local:EmployeeViewModel/>
+    </Window.DataContext>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="5*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Label Grid.Column="0" Grid.Row="0" Margin="20,10,0,0">First Name:</Label>
+        <TextBox Name="FirstNameBox" Grid.Column="1" Grid.Row="0" Margin="0,10,10,0" Width="200"
+                  Text="{Binding firstName, UpdateSourceTrigger=PropertyChanged}"/>
+
+        <Label Grid.Column="0" Grid.Row="1" Margin="20,10,0,0">Last Name:</Label>
+        <TextBox Name="LastNameBox" Grid.Column="1" Grid.Row="1" Margin="0,10,10,0" Width="200"
+                  Text="{Binding lastName, UpdateSourceTrigger=PropertyChanged}"/>
+
+        <Label Grid.Column="0" Grid.Row="2" Margin="20,10,0,0">Sex:</Label>
+        <StackPanel Grid.Column="1" Grid.Row="2" Orientation="Vertical" Margin="20,10,10,0">
+            <RadioButton Content="Female" Margin="20,0,10,0" IsChecked="{Binding Sex, Converter={StaticResource SexConverter}, ConverterParameter=Female}"/>
+            <RadioButton Content="Male" Margin="20,0,0,0" IsChecked="{Binding Sex, Converter={StaticResource SexConverter}, ConverterParameter=Male}"/>
+        </StackPanel>
+
+        <Label Grid.Column="0" Grid.Row="3" Margin="20,10,0,0">Birth Date:</Label>
+        <DatePicker Name="BirthDatePicker" Grid.Column="1" Grid.Row="3" Margin="0,10,10,0" Width="200"
+                    SelectedDate="{Binding BirthDate, StringFormat={}{0:dd.MM.yyyy}}"/>
+
+        <Label Grid.Column="0" Grid.Row="4" Margin="20,10,0,0">Birth Country:</Label>
+        <TextBox Name="BirthCountryBox" Grid.Column="1" Grid.Row="4" Margin="0,10,10,0" Width="200"
+                  Text="{Binding birthCountry, UpdateSourceTrigger=PropertyChanged}"/>
+
+        <Label Grid.Column="0" Grid.Row="5" Margin="20,10,0,0">Salary:</Label>
+        <TextBox Name="SalaryBox" Grid.Column="1" Grid.Row="5" Margin="0,10,10,0" Width="200"  
+                 Text="{Binding salary, UpdateSourceTrigger=PropertyChanged}"/>
+
+        <Label Grid.Column="0" Grid.Row="6" Margin="20,10,0,0">Salary Currency:</Label>
+        <ComboBox Grid.Column="1" Grid.Row="6" Width="200" Margin="0,10,10,10"
+                  ItemsSource="{Binding Source={StaticResource CurrencyValues}}" SelectedItem="{Binding SalaryCurrency}"/>
+
+        <Label Grid.Column="0" Grid.Row="7" Margin="20,10,0,0">Company Role:</Label>
+        <ComboBox Grid.Column="1" Grid.Row="7" Width="200" Margin="0,0,10,10"
+                  ItemsSource="{Binding Source={StaticResource RoleValues}}" SelectedItem="{Binding CompanyRole}"/>
+
+        <Button Grid.Row="8" Grid.ColumnSpan="2" Width="300" HorizontalAlignment="Center" Content="Add" Click ="Add_Click"  Margin="0,0,0,0" />
+        
+    </Grid>
+</Window>
