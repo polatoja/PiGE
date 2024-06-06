@@ -153,6 +153,29 @@
                     <Setter Property="Margin" Value="3" />
                     <Setter Property="BorderBrush" Value="Black" />
                     <Setter Property="Padding" Value="5" />
+                    <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <RotateTransform />
+                        </Setter.Value>
+                    </Setter>
+
+                    <Style.Triggers>
+                        <EventTrigger RoutedEvent="MouseEnter">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                     From="-2" To="0" Duration="0:0:0.01" />
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                     From="-2" To="2" Duration="0:0:0.02" BeginTime="0:0:0.01"
+                                                     AutoReverse="True" RepeatBehavior="2x" />
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                     To="0" Duration="0:0:0.01" BeginTime="0:0:0.13" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Style.Triggers>
+
                 </Style>
             </ListBox.ItemContainerStyle>
         </ListBox>

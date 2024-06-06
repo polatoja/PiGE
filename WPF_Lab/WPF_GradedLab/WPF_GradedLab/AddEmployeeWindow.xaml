@@ -69,32 +69,31 @@
                   Text="{Binding birthCountry, UpdateSourceTrigger=PropertyChanged}" MaxLength="100"/>
 
         <Label Grid.Column="0" Grid.Row="5" Margin="20,10,0,0">Salary:</Label>
-        <TextBox Name="salaryTextBox" Margin="0,10,10,0" Width="200">
-            <TextBox.Text>
-                <Binding Path="Salary" UpdateSourceTrigger="PropertyChanged" ValidatesOnDataErrors="True">
-                    <Binding.ValidationRules>
-                        <local:SalaryValidationRule MinSalary="5000" />
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-            <TextBox.ToolTip>
-                <ToolTip>
-                    <TextBlock>
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding ElementName=salaryTextBox, Path=(Validation.HasError)}" Value="True">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                        <Setter Property="Text" Value="{Binding ElementName=salaryTextBox, Path=(Validation.Errors)[0].ErrorContent}"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                </ToolTip>
-            </TextBox.ToolTip>
-        </TextBox>
+        <StackPanel Grid.Column="1" Grid.Row="5" Margin="0,10,10,0">
+            <TextBox Name="salaryTextBox" Margin="0,10,10,0" Width="200">
+                <TextBox.Text>
+                    <Binding Path="Salary" UpdateSourceTrigger="PropertyChanged" ValidatesOnDataErrors="True">
+                        <Binding.ValidationRules>
+                            <local:SalaryValidationRule MinSalary="5000" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+
+            <TextBlock Foreground="Red" Margin="5">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ElementName=salaryTextBox, Path=(Validation.HasError)}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Setter Property="Text" Value="{Binding ElementName=salaryTextBox, Path=(Validation.Errors)[0].ErrorContent}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </StackPanel>
         
         
         <Label Grid.Column="0" Grid.Row="6" Margin="20,10,0,0">Salary Currency:</Label>
