@@ -20,6 +20,8 @@
         </ObjectDataProvider>
         
         <local:SexConverter x:Key="SexConverter"/>
+        <local:ErrorContentConverter x:Key="ErrorContentConverter"/>
+        <local:ErrorToVisibilityConverter x:Key="ErrorToVisibilityConverter"/>
     </Window.Resources>
 
     <Window.DataContext>
@@ -46,11 +48,11 @@
 
         <Label Grid.Column="0" Grid.Row="0" Margin="20,10,0,0">First Name:</Label>
         <TextBox Name="FirstNameBox" Grid.Column="1" Grid.Row="0" Margin="0,10,10,0" Width="200"
-                  Text="{Binding firstName, UpdateSourceTrigger=PropertyChanged}"/>
+                  Text="{Binding firstName, UpdateSourceTrigger=PropertyChanged}" MaxLength="50"/>
 
         <Label Grid.Column="0" Grid.Row="1" Margin="20,10,0,0">Last Name:</Label>
         <TextBox Name="LastNameBox" Grid.Column="1" Grid.Row="1" Margin="0,10,10,0" Width="200"
-                  Text="{Binding lastName, UpdateSourceTrigger=PropertyChanged}"/>
+                  Text="{Binding lastName, UpdateSourceTrigger=PropertyChanged}" MaxLength="50"/>
 
         <Label Grid.Column="0" Grid.Row="2" Margin="20,10,0,0">Sex:</Label>
         <StackPanel Grid.Column="1" Grid.Row="2" Orientation="Vertical" Margin="20,10,10,0">
@@ -64,12 +66,37 @@
 
         <Label Grid.Column="0" Grid.Row="4" Margin="20,10,0,0">Birth Country:</Label>
         <TextBox Name="BirthCountryBox" Grid.Column="1" Grid.Row="4" Margin="0,10,10,0" Width="200"
-                  Text="{Binding birthCountry, UpdateSourceTrigger=PropertyChanged}"/>
+                  Text="{Binding birthCountry, UpdateSourceTrigger=PropertyChanged}" MaxLength="100"/>
 
         <Label Grid.Column="0" Grid.Row="5" Margin="20,10,0,0">Salary:</Label>
-        <TextBox Name="SalaryBox" Grid.Column="1" Grid.Row="5" Margin="0,10,10,0" Width="200"  
-                 Text="{Binding salary, UpdateSourceTrigger=PropertyChanged}"/>
-
+        <TextBox Name="salaryTextBox" Margin="0,10,10,0" Width="200">
+            <TextBox.Text>
+                <Binding Path="Salary" UpdateSourceTrigger="PropertyChanged" ValidatesOnDataErrors="True">
+                    <Binding.ValidationRules>
+                        <local:SalaryValidationRule MinSalary="5000" />
+                    </Binding.ValidationRules>
+                </Binding>
+            </TextBox.Text>
+            <TextBox.ToolTip>
+                <ToolTip>
+                    <TextBlock>
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=salaryTextBox, Path=(Validation.HasError)}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Setter Property="Text" Value="{Binding ElementName=salaryTextBox, Path=(Validation.Errors)[0].ErrorContent}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </ToolTip>
+            </TextBox.ToolTip>
+        </TextBox>
+        
+        
         <Label Grid.Column="0" Grid.Row="6" Margin="20,10,0,0">Salary Currency:</Label>
         <ComboBox Grid.Column="1" Grid.Row="6" Width="200" Margin="0,10,10,10"
                   ItemsSource="{Binding Source={StaticResource CurrencyValues}}" SelectedItem="{Binding SalaryCurrency}"/>

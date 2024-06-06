@@ -25,7 +25,7 @@ namespace WPF_GradedLab
         {
             InitializeComponent();
             NewEmployee = new Employee();
-            DataContext = NewEmployee;
+            this.DataContext = new EmployeeViewModel();
         }
 
         private void Add_Click(object sender, RoutedEventArgs e)

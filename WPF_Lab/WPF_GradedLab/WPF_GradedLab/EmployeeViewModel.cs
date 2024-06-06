@@ -11,6 +11,8 @@ namespace WPF_GradedLab
     {
         private Currency _salaryCurrency;
         private Role _companyRole;
+        private DateTime _birthDate;
+        private decimal _salary;
 
         public Currency SalaryCurrency
         {
@@ -37,11 +39,36 @@ namespace WPF_GradedLab
                 }
             }
         }
-
+        public DateTime BirthDate
+        {
+            get { return _birthDate; }
+            set
+            {
+                if (_birthDate != value)
+                {
+                    _birthDate = value;
+                    OnPropertyChanged(nameof(BirthDate));
+                }
+            }
+        }
+        public decimal Salary
+        {
+            get { return _salary; }
+            set
+            {
+                if (_salary != value)
+                {
+                    _salary = value;
+                    OnPropertyChanged(nameof(Salary));
+                }
+            }
+        }
         public EmployeeViewModel()
         {
             SalaryCurrency = Currency.PLN;
             CompanyRole = Role.Worker;
+            BirthDate = DateTime.Now.AddYears(-30);
+            Salary = 5000;
         }
         public event PropertyChangedEventHandler PropertyChanged;
 

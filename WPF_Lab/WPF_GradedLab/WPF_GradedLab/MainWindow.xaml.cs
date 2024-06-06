@@ -199,16 +199,11 @@ namespace WPF_GradedLab
 
         private void AddEmployee_Click(object sender, RoutedEventArgs e)
         {
-            if (addEmployeeWindow != null)
-            {
-                addEmployeeWindow.Owner = this;
-                addEmployeeWindow.ShowDialog();
-            }
-            else
-            {
-                MessageBox.Show("Error: Unable to open Add Employee window.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            var addEmployeeWindow = new AddEmployeeWindow();
+            addEmployeeWindow.Owner = this;
+            addEmployeeWindow.ShowDialog();
         }
+
 
         private void DeleteEmployee_Click(object sender, RoutedEventArgs e)
         {
